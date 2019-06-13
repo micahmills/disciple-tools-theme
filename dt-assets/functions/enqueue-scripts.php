@@ -252,6 +252,24 @@ function dt_site_scripts() {
     }
 
     $url_path = dt_get_url_path();
+    if ( 'dashboard' === "$url_path" ){
+        wp_register_script( 'amcharts-core', 'https://www.amcharts.com/lib/4/core.js', false, '4' );
+        wp_register_script( 'amcharts-charts', 'https://www.amcharts.com/lib/4/charts.js', false, '4' );
+        dt_theme_enqueue_script( 'dt-dashboard', 'dt-assets/js/dashboard.js', array( 'jquery', 'jquery-ui', 'lodash', 'amcharts-core', 'amcharts-charts' ), true );
+        wp_localize_script(
+            'dt-dashboard', 'wpApiDashboard', array(
+                'root'                  => esc_url_raw( rest_url() ),
+                'site_url' => get_site_url(),
+                'nonce'                 => wp_create_nonce( 'wp_rest' ),
+                'current_user_login'    => wp_get_current_user()->user_login,
+                'current_user_id'       => get_current_user_id(),
+                'template_dir'          => get_template_directory_uri(),
+                'translations'          => [],
+                'data'           => Disciple_Tools_Dashboard::get_data()
+            )
+        );
+    }
+
     if ( 'settings' === $url_path ) {
         dt_theme_enqueue_script( 'dt-settings', 'dt-assets/js/settings.js', array( 'jquery', 'jquery-ui', 'lodash', 'mapping-drill-down' ), true );
         wp_localize_script(

@@ -205,6 +205,7 @@ else {
                     'groups/new'            => 'template-groups-new.php',
                     'contacts/mergedetails' => 'template-merge-details.php',
                     'view-duplicates'       => 'template-view-duplicates.php',
+                    'dashboard' => 'template-dashboard.php'
                 ];
 
                 $template_for_url = apply_filters( 'dt_templates_for_urls', $template_for_url );
@@ -364,6 +365,13 @@ else {
             $this->workflows = Disciple_Tools_Workflows::instance();
 
             /**
+             * Dasboard
+             */
+
+            require_once( get_template_directory() . '/dt-metrics/dashboard.php' );
+            $this->workflows = Disciple_Tools_Workflows::instance();
+
+            /**
              * Network
              */
             if ( get_option( 'dt_network_enabled' ) ) {
@@ -395,7 +403,7 @@ else {
                 require_once( get_template_directory() . '/dt-core/admin/admin-enqueue-scripts.php' ); // Load admin scripts
                 require_once( get_template_directory() . '/dt-core/admin/admin-theme-design.php' ); // Configures elements of the admin enviornment
                 require_once( get_template_directory() . '/dt-core/admin/config-dashboard.php' );
-                $this->config_dashboard = Disciple_Tools_Dashboard::instance();
+                $this->config_dashboard = Disciple_Tools_Admin_Dashboard::instance();
 
                 // Admin Menus
                 /* Note: The load order matters for the menus and submenus. Submenu must load after menu. */

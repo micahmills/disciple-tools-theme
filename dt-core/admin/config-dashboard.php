@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Disciple_Tools_Dashboard Class
+ * Disciple_Tools_Admin_Dashboard Class
  *
- * @class   Disciple_Tools_Dashboard
+ * @class   Disciple_Tools_Admin_Dashboard
  * @version 0.1.0
  * @since   0.1.0
  * @package Disciple_Tools
@@ -15,13 +15,13 @@ if ( !defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 /**
- * Class Disciple_Tools_Dashboard
+ * Class Disciple_Tools_Admin_Dashboard
  */
-final class Disciple_Tools_Dashboard
+final class Disciple_Tools_Admin_Dashboard
 {
 
     /**
-     * Disciple_Tools_Dashboard The single instance of Disciple_Tools_Dashboard.
+     * Disciple_Tools_Admin_Dashboard The single instance of Disciple_Tools_Admin_Dashboard.
      *
      * @var    object
      * @access private
@@ -30,12 +30,12 @@ final class Disciple_Tools_Dashboard
     private static $_instance = null;
 
     /**
-     * Main Disciple_Tools_Dashboard Instance
-     * Ensures only one instance of Disciple_Tools_Dashboard is loaded or can be loaded.
+     * Main Disciple_Tools_Admin_Dashboard Instance
+     * Ensures only one instance of Disciple_Tools_Admin_Dashboard is loaded or can be loaded.
      *
      * @since  0.1.0
      * @static
-     * @return Disciple_Tools_Dashboard
+     * @return Disciple_Tools_Admin_Dashboard
      */
     public static function instance() {
         if ( is_null( self::$_instance ) ) {
