@@ -255,7 +255,8 @@ function dt_site_scripts() {
     if ( 'dashboard' === "$url_path" ){
         wp_register_script( 'amcharts-core', 'https://www.amcharts.com/lib/4/core.js', false, '4' );
         wp_register_script( 'amcharts-charts', 'https://www.amcharts.com/lib/4/charts.js', false, '4' );
-        dt_theme_enqueue_script( 'dt-dashboard', 'dt-assets/js/dashboard.js', array( 'jquery', 'jquery-ui', 'lodash', 'amcharts-core', 'amcharts-charts' ), true );
+        wp_register_script( 'amcharts-animated', 'https://www.amcharts.com/lib/4/themes/animated.js', false, '4' );
+        dt_theme_enqueue_script( 'dt-dashboard', 'dt-assets/js/dashboard.js', array( 'jquery', 'jquery-ui', 'lodash', 'amcharts-core', 'amcharts-charts', 'amcharts-animated', 'moment' ), true );
         wp_localize_script(
             'dt-dashboard', 'wpApiDashboard', array(
                 'root'                  => esc_url_raw( rest_url() ),

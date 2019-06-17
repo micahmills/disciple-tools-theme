@@ -838,3 +838,54 @@ label.dt-switch:active:after {
 .geocode-link {
     margin-top:.7rem;
 }
+
+
+/**
+ * Dashboard
+ */
+.dashboard-page {
+    .dash-cards {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+
+        .item {
+
+            padding: 10px;
+
+            .card {
+                padding: 25px;
+                margin:10px;
+                box-shadow: 5px 5px 10px 0 #3284e526;
+                border-radius: 15px;
+                background-color: white;
+                height: 100%;
+            }
+        }
+
+    }
+
+    .count-square {
+        border-radius: 5px;
+        height: 30px;
+        width:30px;
+        display: inline-block;
+        text-align: center;
+        vertical-align: top;
+        span {
+            vertical-align: sub
+        }
+    }
+    .card-title {
+        margin-left: 10px;
+        font-size: 1.66667rem;
+        vertical-align: middle
+    }
+
+    .view-all {
+        text-align: center; margin-top: 10px;
+        button {
+            margin-bottom: 0
+        }
+    }
+}

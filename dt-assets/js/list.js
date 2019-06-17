@@ -23,6 +23,17 @@
   } catch (e) {
     cachedFilter = {}
   }
+  $.urlParam = function (name) {
+    var results = new RegExp('[\?&]' + name + '=([^&#]*)')
+      .exec(window.location.search);
+
+    return (results !== null) ? results[1] || 0 : false;
+  }
+
+  let tabQueryParam = $.urlParam( 'list-tab' )
+  console.log(tabQueryParam);
+
+
   let showClosedCookie = getCookie("show_closed")
   let showClosedCheckbox = $('#show_closed')
   let currentFilter = {}
@@ -58,6 +69,8 @@
       data.sort = wpApiListSettings.current_post_type === "contacts" ? "overall_status" : "group_type";
     }
     currentFilter.query = data
+    console.log(JSON.stringify( currentFilter) );
+
     document.cookie = `last_view=${JSON.stringify(currentFilter)}`
     let showClosed = showClosedCheckbox.prop("checked")
     if ( !showClosed ){
@@ -154,6 +167,13 @@
   }
   setupFilters(savedFilters[wpApiListSettings.current_post_type])
   //look at the cookie to see what was the last selected view
+  if ( tabQueryParam ){
+    cachedFilter = {
+      type: "default",
+      tab: "my",
+      ID: tabQueryParam
+    }
+  }
   let selectedFilter = ""
   if ( cachedFilter && !_.isEmpty(cachedFilter)){
     if (cachedFilter.type==="saved-filters"){
