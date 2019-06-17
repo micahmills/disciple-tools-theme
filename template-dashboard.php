@@ -78,10 +78,10 @@ get_header();
 
 
 
-            <div class="dash-cards">
+            <div class="dash-cards" id="benchmarks">
                 <div class="item" style="flex-basis: 100%">
                 <div class="card">
-                    <div style="display: flex">
+                    <div style="display: flex; flex-wrap: wrap">
                         <div style="flex-basis: 40%">
                             <h2 style="margin:50px">Personal Benchmarks</h2>
                             <ul style="list-style: none; margin-left: 50px">

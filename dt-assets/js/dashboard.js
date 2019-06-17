@@ -186,6 +186,11 @@ jQuery(document).ready(function($) {
       series.columns.template.tooltipText = "{name}: [bold]{valueY}[/]";
       series.stacked = stacked;
       series.columns.template.width = am4core.percent(95);
+      let valueLabel = series.bullets.push(new am4charts.LabelBullet());
+      valueLabel.label.text = "{valueY}";
+      valueLabel.label.dy = -10;
+      valueLabel.label.hideOversized = false;
+      valueLabel.label.truncate = false;
     }
     chart.colors.list = [
       am4core.color("#C7E3FF"),
@@ -212,6 +217,8 @@ jQuery(document).ready(function($) {
     series.bottomRatio = 1;
     series.topWidth = am4core.percent(100);
     series.bottomWidth = am4core.percent(40);
+
+    series.labels.template.text = "[font-size: 10px]{category}: {value}[/]";
 
     series.colors.list = [
       am4core.color("#C7E3FF"),

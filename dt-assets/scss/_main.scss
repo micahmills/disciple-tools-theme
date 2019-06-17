@@ -889,3 +889,15 @@ label.dt-switch:active:after {
         }
     }
 }
+@media screen and (max-width : 640px){
+    .dashboard-page {
+        .dash-cards {
+            .item {
+                flex-basis: 100% !important;
+            }
+        }
+        #benchmarks .card div{
+            flex-basis: 100%  !important;
+        }
+    }
+}
