@@ -265,7 +265,7 @@ function dt_site_scripts() {
                 'current_user_login'    => wp_get_current_user()->user_login,
                 'current_user_id'       => get_current_user_id(),
                 'template_dir'          => get_template_directory_uri(),
-                'translations'          => [],
+                'translations'          => Disciple_Tools_Dashboard::translations(),
                 'data'           => Disciple_Tools_Dashboard::get_data()
             )
         );

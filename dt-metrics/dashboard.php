@@ -19,6 +19,18 @@ class Disciple_Tools_Dashboard{
             'requires_update' => [ "true" ],
             'assigned_to'     => [ 'me' ]
         ] );
+        if ( sizeof( $update_needed["contacts"] ) > 5 ) {
+            $update_needed["contacts"] = array_slice( $update_needed["contacts"], 0, 5 );
+        }
+        if ( sizeof( $to_accept["contacts"] ) > 5 ) {
+            $to_accept["contacts"] = array_slice( $to_accept["contacts"], 0, 5 );
+        }
+        foreach ( $update_needed["contacts"] as &$contact ){
+            $now = time();
+            $last_modified = get_post_meta( $contact->ID, "last_modified", true );
+            $days_different = (int) round( ( $now - (int) $last_modified ) / ( 60 * 60 * 24 ) );
+            $contact->last_modified_msg = esc_attr( sprintf( __( '%s days since last update', 'disciple_tools' ), $days_different ), 'disciple_tools' );
+        }
 
         $seeker_path_personal = self::query_my_contacts_progress();
         $seeker_path = self::query_project_contacts_progress();
@@ -268,11 +280,12 @@ class Disciple_Tools_Dashboard{
                 AND pm.meta_value = log.meta_value
             )
             WHERE log.meta_key = 'milestones'
+            AND log.user_id = %s
             AND log.object_type = 'contacts'
             AND log.hist_time > %s
             AND log.hist_time < %s
             GROUP BY log.meta_value
-        ", $start, $end ), ARRAY_A );
+        ", esc_sql( get_current_user_id() ), $start, $end ), ARRAY_A );
 
         $field_settings = Disciple_Tools_Contact_Post_Type::instance()->get_custom_fields_settings();
         $milestones_options = $field_settings["milestones"]["default"];
@@ -295,6 +308,16 @@ class Disciple_Tools_Dashboard{
         }
 
         return $return;
+    }
+
+    public static function translations(){
+        return [
+            "accept" => __( "Accept", 'disciple_tools' ),
+            "decline" => __( "Decline", 'disciple_tools' ),
+            "number_contacts_assigned" => __( "# Contacts Assigned", 'disciple_tools' ),
+            "number_meetings" => __( "# Meetings", 'disciple_tools' ),
+            "number_milestones" => __( "# Faith milestones", 'disciple_tools' ),
+        ];
     }
 
 }

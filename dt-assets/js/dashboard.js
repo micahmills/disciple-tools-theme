@@ -14,8 +14,8 @@ jQuery(document).ready(function($) {
       contact.post_title)}</a>
         </div>
         <div>
-            <button class="button small" style="background-color: rgba(76,175,80,0.21); color: black; margin-bottom: 0">Accept</button>
-            <button class="button small" style="background-color: rgba(236,17,17,0.2); color: black; margin-bottom: 0">Decline</button>
+            <button class="button small dt-green" style="color: white; margin-bottom: 0">${_.escape(wpApiDashboard.translations.accept)}</button>
+            <button class="button small" style="background-color: #f43636; color: white; margin-bottom: 0">${_.escape(wpApiDashboard.translations.decline)}</button>
         </div>
     </div>`
   })
@@ -32,7 +32,7 @@ jQuery(document).ready(function($) {
         <div style="display: inline-block; margin-left: 10px">
             <a style="font-size: 1.3rem" href="${wpApiDashboard.site_url}/contacts/${contact.ID}">${_.escape( contact.post_title ) }</a>
             <br>
-            <span>44 days since last update<span>
+            <span>${_.escape(contact.last_modified_msg)}<span>
         </div>
     </div>`
     up_list += row
@@ -143,23 +143,23 @@ jQuery(document).ready(function($) {
     $('#benchmarks_previous').html(`${sixty_days_ago.format("MMMM D, YYYY")} to ${thirty_days_ago.format("MMMM D, YYYY")}`)
 
     am4core.useTheme(am4themes_animated);
-    var chart = am4core.create("benchmark_chart", am4charts.XYChart);
+    let chart = am4core.create("benchmark_chart", am4charts.XYChart);
 
     chart.data = [ {
-      "year": "# Contacts Assigned",
+      "year": _.escape(wpApiDashboard.translations.number_contacts_assigned),
       "previous": data.benchmarks.contacts.previous,
       "current": data.benchmarks.contacts.current
     }, {
-      "year": "# Meetings",
+      "year": _.escape(wpApiDashboard.translations.number_meetings),
       "previous": data.benchmarks.meetings.previous,
       "current": data.benchmarks.meetings.current
     }, {
-      "year": "# Faith milestones",
+      "year": _.escape(wpApiDashboard.translations.number_milestones),
       "previous": data.benchmarks.milestones.previous,
       "current": data.benchmarks.milestones.current
     } ];
 
-    var categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
+    let categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
     categoryAxis.dataFields.category = "year";
     // categoryAxis.title.text = "Local country offices";
     categoryAxis.renderer.grid.template.location = 0;
@@ -170,7 +170,7 @@ jQuery(document).ready(function($) {
 
 
 
-    var  valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+    let  valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
     valueAxis.min = 0;
     // valueAxis.title.text = "Expenditure (M)";
     valueAxis.renderer.grid.template.disabled = true;
@@ -179,7 +179,7 @@ jQuery(document).ready(function($) {
 
     // Create series
     function createSeries(field, name, stacked) {
-      var series = chart.series.push(new am4charts.ColumnSeries());
+      let series = chart.series.push(new am4charts.ColumnSeries());
       series.dataFields.valueY = field;
       series.dataFields.categoryX = "year";
       series.name = name;
@@ -206,19 +206,34 @@ jQuery(document).ready(function($) {
   function seeker_path_chart() {
     am4core.useTheme(am4themes_animated);
 
-    var chart = am4core.create("seeker_path_chart", am4charts.SlicedChart);
+    let chart = am4core.create("seeker_path_chart", am4charts.PieChart);
     chart.hiddenState.properties.opacity = 0; // this makes initial fade in effect
-    chart.data = data.seeker_path
+    //remove empty values
+    _.pullAllBy( data.seeker_path_personal, [{ value: 0 }], "value" )
+    chart.data = data.seeker_path_personal
 
-    var series = chart.series.push(new am4charts.PyramidSeries());
+
+    chart.radius = am4core.percent(70);
+    chart.innerRadius = am4core.percent(40);
+    chart.startAngle = 180;
+    chart.endAngle = 360;
+
+    let series = chart.series.push(new am4charts.PieSeries());
     series.dataFields.value = "value";
     series.dataFields.category = "label";
-    series.alignLabels = true;
-    series.bottomRatio = 1;
-    series.topWidth = am4core.percent(100);
-    series.bottomWidth = am4core.percent(40);
 
-    series.labels.template.text = "[font-size: 10px]{category}: {value}[/]";
+    series.slices.template.cornerRadius = 10;
+    series.slices.template.innerCornerRadius = 7;
+    series.slices.template.draggable = true;
+    series.slices.template.inert = true;
+    series.alignLabels = false;
+
+    series.hiddenState.properties.startAngle = 90;
+    series.hiddenState.properties.endAngle = 90;
+
+    series.labels.template.text = "[font-size: 12px]{category}: {value}[/]";
+    series.labels.template.wrap = true
+    series.labels.template.maxWidth = 90
 
     series.colors.list = [
       am4core.color("#C7E3FF"),
@@ -231,7 +246,8 @@ jQuery(document).ready(function($) {
       am4core.color("#5D8BB1"),
       am4core.color("#4E7EA6"),
       am4core.color("#3F729B"),
-    ].reverse()
+    ]
+
   }
 
   function milestones() {
@@ -240,8 +256,8 @@ jQuery(document).ready(function($) {
 
     data.milestones.forEach( m=>{
       milestones += `<div class="group-progress-button-wrapper" style="flex-basis: 33%">
-        <button style="color: white" class="group-progress-button"> ${m.value} </button>
-        <p>${m.milestones}</p>
+        <button style="color: white" class="group-progress-button"> ${_.escape( m.value )} </button>
+        <p>${_.escape( m.milestones )}</p>
       </div>`
     })
     $("#milestones").html(milestones)
