@@ -30,6 +30,9 @@ get_header();
                                 <a class="button dt-green" style="margin-bottom:0" href="<?php echo esc_url( home_url( '/' ) ) . "contacts/new" ?>">
                                     <?php esc_html_e( "Add a contact", 'disciple_tools' ) ?>
                                 </a>
+                                <a class="button" style="margin-bottom:0; margin-left: 10px" href="<?php echo esc_url( home_url( '/' ) ) . "contacts" ?>">
+                                    <?php esc_html_e( "View Contacts List", 'disciple_tools' ) ?>
+                                </a>
                             </div>
                         </div>
                     </div>
