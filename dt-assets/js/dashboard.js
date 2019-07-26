@@ -38,7 +38,7 @@ jQuery(document).ready(function($) {
     up_list += row
   })
   $('#update_needed_list').html( up_list)
-  
+
   $('#view_updated_needed_button').on( "click", function () {
     document.location = `${wpApiDashboard.site_url}/contacts?list-tab=update_needed`
   })
@@ -201,8 +201,8 @@ jQuery(document).ready(function($) {
     createSeries("current", "Current", false);
 
   }
-  
-  
+
+
   function seeker_path_chart() {
     am4core.useTheme(am4themes_animated);
 

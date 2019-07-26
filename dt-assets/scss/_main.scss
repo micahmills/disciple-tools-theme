@@ -868,13 +868,14 @@ label.dt-switch:active:after {
 
     .count-square {
         border-radius: 5px;
-        height: 30px;
-        width:30px;
-        display: inline-block;
-        text-align: center;
-        vertical-align: top;
+        display:inline-block;
+        line-height:0px;
         span {
-            vertical-align: sub
+            display:inline-block;
+            padding-top:15px;
+            padding-bottom:15px;
+            margin-left:8px;
+            margin-right:8px;
         }
     }
     .card-title {
@@ -889,6 +890,33 @@ label.dt-switch:active:after {
             margin-bottom: 0
         }
     }
+
+    .numberCircle {
+        background-color: #3f729b;
+        color: white;
+        display:inline-block;
+        border-radius:50%;
+        border:2px solid;
+        line-height:0px;
+        font-size:4rem;
+    }
+
+    .numberCircle:before,
+    .numberCircle:after {
+        content:'\200B';
+        display:inline-block;
+        line-height:0px;
+
+        padding-top:50%;
+        padding-bottom:50%;
+    }
+
+    .numberCircle:before {
+        padding-left:8px;
+    }
+    .numberCircle:after {
+        padding-right:8px;
+    }
 }
 @media screen and (max-width : 640px){
     .dashboard-page {
@@ -901,4 +929,9 @@ label.dt-switch:active:after {
             flex-basis: 100%  !important;
         }
     }
+}
+
+//make sure datepicker stays above other ui elements
+.ui-datepicker {
+    z-index: 10 !important;
 }

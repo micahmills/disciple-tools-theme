@@ -22,9 +22,7 @@ get_header();
                                 <span class="card-title"><?php esc_html_e( "Active Contacts", 'disciple_tools' ) ?></span>
                             </div>
                             <div style="text-align: center; flex-grow: 1; margin-top: 20px">
-                                <div style="background-color: #3f729b; border-radius: 100%; height: 150px; width:150px; margin-left: auto; margin-right:auto" >
-                                    <span id="active_contacts" style="vertical-align: middle; font-size: 7rem; color: white"></span>
-                                </div>
+                                <span class="numberCircle">&nbsp;<span id="active_contacts">-</span>&nbsp;</span>
                             </div>
                             <div class="view-all" style="flex-shrink: 1">
                                 <a class="button dt-green" style="margin-bottom:0" href="<?php echo esc_url( home_url( '/' ) ) . "contacts/new" ?>">
