@@ -192,6 +192,19 @@ class Disciple_Tools_Contacts extends Disciple_Tools_Posts
                     }
                     $fields["assigned_to"] = sprintf( "user-%d", $base_id );
                 }
+            } else {
+                if ( filter_var( $fields["assigned_to"], FILTER_VALIDATE_EMAIL ) ){
+                    $user = get_user_by( "email", $fields["assigned_to"] );
+                    if ( $user ) {
+                        $fields["assigned_to"] = $user->ID;
+                    } else {
+                        return new WP_Error( __FUNCTION__, "Unrecognized user", $fields["assigned_to"] );
+                    }
+                }
+                if ( is_numeric( $fields["assigned_to"] ) ||
+                     strpos( $fields["assigned_to"], "user" ) === false ){
+                    $fields["assigned_to"] = "user-" . $fields["assigned_to"];
+                }
             }
             if ( !isset( $fields["overall_status"] ) ){
                 $current_roles = wp_get_current_user()->roles;
@@ -254,14 +267,18 @@ class Disciple_Tools_Contacts extends Disciple_Tools_Posts
                 }
                 $existing_contact = DT_Posts::get_post( 'contacts', $post_id, true, false );
                 if ( !isset( $existing_contact["assigned_to"] ) || $fields["assigned_to"] !== $existing_contact["assigned_to"]["assigned-to"] ){
-                    if ( current_user_can( "assign_any_contacts" ) ) {
-                        $fields["overall_status"] = 'assigned';
-                    }
                     $user_id = explode( '-', $fields["assigned_to"] )[1];
+                    if ( $user_id != get_current_user_id() ){
+                        if ( current_user_can( "assign_any_contacts" ) ) {
+                            $fields["overall_status"] = 'assigned';
+                        }
+                        $fields['accepted'] = false;
+                    } elseif ( isset( $existing_contact["overall_status"]["key"] ) && $existing_contact["overall_status"]["key"] === "assigned" ) {
+                        $fields["overall_status"] = 'active';
+                    }
                     if ( $user_id ){
                         DT_Posts::add_shared( "contacts", $post_id, $user_id, null, false, true, false );
                     }
-                    $fields['accepted'] = false;
                 }
             }
             if ( isset( $fields["reason_unassignable"] ) ){
@@ -519,7 +536,8 @@ class Disciple_Tools_Contacts extends Disciple_Tools_Posts
      * @return array|null|object
      */
     public static function get_activity( $contact_id ) {
-        return DT_Posts::get_post_activity( "contacts", $contact_id );
+        $resp = DT_Posts::get_post_activity( "contacts", $contact_id );
+        return is_wp_error( $resp ) ? $resp : $resp["activity"];
     }
 
     /**
@@ -830,7 +848,8 @@ class Disciple_Tools_Contacts extends Disciple_Tools_Posts
      * @return array|int|WP_Error
      */
     public static function get_comments( int $contact_id, bool $check_permissions = true, $type = "all" ) {
-        return DT_Posts::get_post_comments( 'contacts', $contact_id, $check_permissions, $type );
+        $resp = DT_Posts::get_post_comments( 'contacts', $contact_id, $check_permissions, $type );
+        return is_wp_error( $resp ) ? $resp : $resp["comments"];
     }
 
 

@@ -624,7 +624,7 @@ class Disciple_Tools_Posts
         }
         if ( !isset( $query["assigned_to"] ) || in_array( "all", $query["assigned_to"] ) ){
             $query["assigned_to"] = [ "all" ];
-            if ( !self::can_view_all( 'contacts' ) && $check_permissions ){
+            if ( !self::can_view_all( $post_type ) && $check_permissions ){
                 $query["assigned_to"] = [ "me" ];
                 if ( !in_array( "shared", $include )){
                     $include[] = "shared";
@@ -671,7 +671,7 @@ class Disciple_Tools_Posts
                         if ( $assigned_to == "me" ){
                             $assigned_to = "user-" . $current_user->ID;
                         } else if ( $assigned_to != "all" && $assigned_to != "shared" ) {
-                            if ( self::can_view_all( 'contacts' ) || !$check_permissions ){
+                            if ( self::can_view_all( $post_type ) || !$check_permissions ){
                                 $assigned_to = "user-" . $assigned_to;
                             } else {
                                 $assigned_to = "user-" . $assigned_to;
@@ -745,9 +745,9 @@ class Disciple_Tools_Posts
         if ( !empty( $search )){
             $inner_joins .= "INNER JOIN $wpdb->postmeta AS search ON ( $wpdb->posts.ID = search.post_id ) ";
             $other_search_fields = apply_filters( "dt_search_extra_post_meta_fields", [] );
-            $meta_query .= "AND ( ( $wpdb->posts.post_title LIKE '%" . esc_sql( $search ) . "%' ) OR ( search.meta_key LIKE 'contact_%' AND INSTR( search.meta_value, '" . esc_sql( $search ) . "' ) > 0 )  ";
+            $meta_query .= "AND ( ( $wpdb->posts.post_title LIKE '%%" . esc_sql( $search ) . "%%' ) OR ( search.meta_key LIKE 'contact_%' AND INSTR( search.meta_value, '" . esc_sql( $search ) . "' ) > 0 )  ";
             foreach ( $other_search_fields as $field ){
-                $meta_query .= " OR ( search.meta_key LIKE '" . esc_sql( $field ) . "' AND search.meta_value LIKE '%" . esc_sql( $search ) . "%'   ) ";
+                $meta_query .= " OR ( search.meta_key LIKE '" . esc_sql( $field ) . "' AND search.meta_value LIKE '%%" . esc_sql( $search ) . "%%'   ) ";
             }
             $meta_query .= " ) ";
 
@@ -1123,7 +1123,14 @@ class Disciple_Tools_Posts
                         return new WP_Error( __FUNCTION__, "missing key on: " . $details_key );
                     }
                     //delete field
+                    $potential_error = delete_post_meta( $post_id, $field["key"] );
+                    if ( is_wp_error( $potential_error ) ){
+                        return $potential_error;
+                    }
                     $potential_error = delete_post_meta( $post_id, $field["key"] . '_details' );
+                    if ( is_wp_error( $potential_error ) ){
+                        return $potential_error;
+                    }
                 } else if ( isset( $field["key"] ) ){
                     //update field
                     $potential_error = self::update_post_contact_method( $post_id, $field["key"], $field );
@@ -1142,6 +1149,89 @@ class Disciple_Tools_Posts
         }
         return $fields;
     }
+
+
+
+
+    public static function update_post_user_meta_fields( array $field_settings, int $post_id, array $fields, array $existing_record ){
+        global $wpdb;
+        foreach ( $fields as $field_key => $field ) {
+            if ( isset( $field_settings[ $field_key ] ) && ( $field_settings[ $field_key ]["type"] === "post_user_meta" ) ) {
+                if ( !isset( $field["values"] )){
+                    return new WP_Error( __FUNCTION__, "missing values field on: " . $field_key );
+                }
+
+                foreach ( $field["values"] as $value ){
+                    if ( isset( $value["value"] ) || ( !empty( $value["delete"] && !empty( $value['id'] ) ) ) ){
+                        $current_user_id = get_current_user_id();
+                        if ( !$current_user_id ){
+                            return new WP_Error( __FUNCTION__, "Cannot update post_user_meta fields for no user." . $field_key );
+                        }
+                        if ( !empty( $value["id"] ) ) {
+                            //see if we find the value with the correct id on this contact for this user.
+                            $exists = false;
+                            foreach ( $existing_record[$field_key] ?? [] as $v ){
+                                if ( (int) $v["id"] === (int) $value["id"] ){
+                                    $exists = true;
+                                }
+                            }
+                            if ( !$exists ){
+                                return new WP_Error( __FUNCTION__, "A field for key $field_key with id " . $value["id"] . " was not found for this user on this post" );
+                            }
+                            if ( isset( $value["delete"] ) && $value["delete"] == true ) {
+                                //delete user meta
+                                $delete = $wpdb->query( $wpdb->prepare( "
+                                DELETE FROM $wpdb->dt_post_user_meta 
+                                WHERE id = %s
+                                    AND user_id = %s
+                                    AND post_id = %s
+                            ", $value["id"], $current_user_id, $post_id ) );
+                                if ( !$delete ){
+                                    return new WP_Error( __FUNCTION__, "Something wrong deleting post user meta on field: " . $field_key );
+                                }
+                            } else {
+                                //update user meta
+                                $date   = $value["date"] ?? null;
+                                $update = $wpdb->update( $wpdb->dt_post_user_meta,
+                                    [
+                                        "meta_value" => $value["value"],
+                                        "date"       => $date
+                                    ],
+                                    [
+                                        "id"       => $value["id"],
+                                        "user_id"  => $current_user_id,
+                                        "post_id"  => $post_id,
+                                        "meta_key" => $field_key,
+                                    ]
+                                );
+                                if ( !$update ) {
+                                    return new WP_Error( __FUNCTION__, "Something wrong on field: " . $field_key );
+                                }
+                            }
+                        } else {
+                            //create user meta
+                            $date = $value["date"] ?? null;
+                            $create = $wpdb->insert( $wpdb->dt_post_user_meta,
+                                [
+                                    "user_id" => $current_user_id,
+                                    "post_id" => $post_id,
+                                    "meta_key" => $field_key,
+                                    "meta_value" => $value["value"],
+                                    "date" => $date
+                                ]
+                            );
+                            if ( !$create ){
+                                return new WP_Error( __FUNCTION__, "Something wrong on field: " . $field_key );
+                            }
+                        }
+                    } else {
+                        return new WP_Error( __FUNCTION__, "Missing 'value' or 'id' key on field: " . $field_key );
+                    }
+                }
+            }
+        }
+    }
+
 
     /**
      * Helper function to create a unique metakey for contact channels.
@@ -1445,6 +1535,28 @@ class Disciple_Tools_Posts
                 }
             } else {
                 $fields[ $key ] = $value[0];
+            }
+        }
+
+        global $wpdb;
+        $user_id = get_current_user_id();
+        if ( $user_id ){
+            $post_user_meta = $wpdb->get_results( $wpdb->prepare(
+                "
+                    SELECT * FROM $wpdb->dt_post_user_meta
+                    WHERE post_id = %s
+                    AND user_id = %s
+                ", $post_id, $user_id
+            ), ARRAY_A );
+            foreach ( $post_user_meta as $m ){
+                if ( !isset( $fields[ $m["meta_key"] ] ) ) {
+                    $fields[$m["meta_key"]] = [];
+                }
+                $fields[$m["meta_key"]][] = [
+                    "id" => $m["id"],
+                    "value" => $m["meta_value"],
+                    "date" => $m["date"]
+                ];
             }
         }
     }
