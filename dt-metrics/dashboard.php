@@ -17,7 +17,8 @@ class Disciple_Tools_Dashboard{
         ] );
         $update_needed = Disciple_Tools_Contacts::search_viewable_contacts( [
             'requires_update' => [ "true" ],
-            'assigned_to'     => [ 'me' ]
+            'assigned_to'     => [ 'me' ],
+            'overall_status' => [ '-closed' ]
         ] );
         if ( sizeof( $update_needed["contacts"] ) > 5 ) {
             $update_needed["contacts"] = array_slice( $update_needed["contacts"], 0, 5 );
