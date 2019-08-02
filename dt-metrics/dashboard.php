@@ -296,37 +296,35 @@ class Disciple_Tools_Dashboard{
         return $query_results;
     }
 
-    public static function milestones( $start = null, $end = null ){
+    public static function milestones(){
         global $wpdb;
-        if ( empty( $start ) ){
-            $start = 0;
-        }
-        if ( empty( $end ) ){
-            $end = time();
-        }
 
-        $res = $wpdb->get_results( $wpdb->prepare( "
-            SELECT COUNT( DISTINCT(log.object_id) ) as `value`, log.meta_value as milestones
-            FROM $wpdb->dt_activity_log log
-            INNER JOIN $wpdb->posts post 
-            ON (
-                post.ID = log.object_id
-                AND post.post_type = 'contacts'
-                AND post.post_status = 'publish'
-            )
-            INNER JOIN $wpdb->postmeta pm
-            ON (
-                pm.post_id = post.ID
-                AND pm.meta_key = 'milestones'
-                AND pm.meta_value = log.meta_value
-            )
-            WHERE log.meta_key = 'milestones'
-            AND log.user_id = %s
-            AND log.object_type = 'contacts'
-            AND log.hist_time > %s
-            AND log.hist_time < %s
-            GROUP BY log.meta_value
-        ", esc_sql( get_current_user_id() ), $start, $end ), ARRAY_A );
+        $user_id = get_current_user_id();
+        $res = $wpdb->get_results( $wpdb->prepare( "SELECT b.meta_value as milestones, count( a.ID ) as value
+             FROM $wpdb->posts as a
+               JOIN $wpdb->postmeta as b
+                 ON a.ID=b.post_id
+                    AND b.meta_key = 'milestones'
+               JOIN $wpdb->postmeta as c
+                 ON a.ID=c.post_id
+                    AND c.meta_key = 'assigned_to'
+                        AND c.meta_value = %s
+               JOIN $wpdb->postmeta as d
+                 ON a.ID=d.post_id
+                    AND d.meta_key = 'overall_status'
+                        AND d.meta_value = 'active'
+             WHERE a.post_status = 'publish'
+                AND a.post_type = 'contacts'
+                AND a.ID NOT IN (
+                    SELECT post_id
+                    FROM $wpdb->postmeta
+                    WHERE meta_key = 'corresponds_to_user'
+                    AND meta_value != 0
+                    GROUP BY post_id
+                )
+             GROUP BY b.meta_value
+        ",
+        'user-'. $user_id ), ARRAY_A );
 
         $field_settings = Disciple_Tools_Contact_Post_Type::instance()->get_custom_fields_settings();
         $milestones_options = $field_settings["milestones"]["default"];

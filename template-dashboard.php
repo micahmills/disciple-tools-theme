@@ -117,7 +117,7 @@ get_header();
                             <?php echo esc_html__( 'Faith Milestone Totals', 'disciple_tools' ) ?>
                              <div style="display: inline-block" class="loading-spinner active"></div>
                         </span>
-                        <p style="text-align: center; margin-bottom: 30px"><?php esc_html_e( "Milestones that you have personally moved forward", 'disciple_tools' ) ?></p>
+                        <p style="text-align: center; margin-bottom: 30px"><?php esc_html_e( "Milestones on your active contacts", 'disciple_tools' ) ?></p>
                         <div >
                             <div style="display: flex; flex-wrap: wrap" id="milestones">
 
