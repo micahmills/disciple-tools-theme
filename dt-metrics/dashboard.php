@@ -354,7 +354,7 @@ class Disciple_Tools_Dashboard{
             "accept" => __( "Accept", 'disciple_tools' ),
             "decline" => __( "Decline", 'disciple_tools' ),
             "number_contacts_assigned" => __( "# Contacts Assigned", 'disciple_tools' ),
-            "number_meetings" => __( "# Meetings", 'disciple_tools' ),
+            "number_meetings" => __( "# First Meetings", 'disciple_tools' ),
             "number_milestones" => __( "# Faith milestones", 'disciple_tools' ),
         ];
     }

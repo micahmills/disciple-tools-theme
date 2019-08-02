@@ -131,7 +131,8 @@ get_header();
                             <?php esc_html_e( "Seeker Path Progress", 'disciple_tools' ) ?>
                              <div style="display: inline-block" class="loading-spinner active"></div>
                         </span>
-                        <div id="seeker_path_chart" style="height:400px; width;200px; padding-left: 20px; padding-right: 20px"></div>
+                        <p style="text-align: center; display: none" id="empty_seeker_path"><strong><?php esc_html_e( "No data to show yet. You have no active contacts", 'disciple_tools' ) ?></strong></p>
+                        <div id="seeker_path_chart" style="height:400px; width;200px; padding-left: 10px; padding-right: 10px"></div>
 
                     </div>
                 </div>

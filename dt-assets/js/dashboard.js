@@ -10,7 +10,7 @@ jQuery(document).ready(function($) {
     needs_accepting_list += `<div style="margin-top:10px; display: flex">
         <div style="display: inline-block; vertical-align: middle"><i class="fi-torso large"></i></div>
         <div style="display: inline-block; margin-left: 10px; vertical-align: middle; flex-grow: 1">
-            <a style="font-size: 1.3rem" href="${wpApiDashboard.site_url}/contacts/${contact.ID}">${_.escape(
+            <a style="font-size: 1.1rem" href="${wpApiDashboard.site_url}/contacts/${contact.ID}">${_.escape(
       contact.post_title)}</a>
         </div>
         <div>
@@ -27,12 +27,12 @@ jQuery(document).ready(function($) {
   $('#update_needed').html(data.update_needed.total)
   let up_list = ``
   data.update_needed.contacts.slice(0, 3).forEach( contact =>{
-    let row = `<div style="margin-top:10px">
+    let row = `<div style="margin-top:5px">
         <div style="display: inline-block"><i class="fi-torso large"></i></div>
         <div style="display: inline-block; margin-left: 10px">
-            <a style="font-size: 1.3rem" href="${wpApiDashboard.site_url}/contacts/${contact.ID}">${_.escape( contact.post_title ) }</a>
+            <a style="font-size: 1.1rem" href="${wpApiDashboard.site_url}/contacts/${contact.ID}">${_.escape( contact.post_title ) }</a>
             <br>
-            <span>${_.escape(contact.last_modified_msg)}<span>
+            <span style="font-size: 0.9rem">${_.escape(contact.last_modified_msg)}</span>
         </div>
     </div>`
     up_list += row
@@ -224,6 +224,9 @@ jQuery(document).ready(function($) {
     //remove empty values
     _.pullAllBy( data.seeker_path_personal, [{ value: 0 }], "value" )
     chart.data = data.seeker_path_personal
+    if ( _.isEmpty( chart.data ) ){
+      $('#empty_seeker_path').show()
+    }
 
 
     chart.radius = am4core.percent(70);
@@ -240,11 +243,13 @@ jQuery(document).ready(function($) {
     series.slices.template.draggable = true;
     series.slices.template.inert = true;
     series.alignLabels = false;
+    series.slices.minHorizontalGap = 0;
 
     series.hiddenState.properties.startAngle = 90;
     series.hiddenState.properties.endAngle = 90;
 
-    series.labels.template.text = "[font-size: 12px]{category}: {value}[/]";
+    // series.labels.template.text = "[font-size: 12px]{category}: {value}[/]";
+    series.labels.template.text = "{value}";
     series.labels.template.wrap = true
     series.labels.template.maxWidth = 90
 
@@ -260,6 +265,10 @@ jQuery(document).ready(function($) {
       am4core.color("#4E7EA6"),
       am4core.color("#3F729B"),
     ]
+
+    chart.legend = new am4charts.Legend();
+    chart.legend.valueLabels.template.text = "";
+    chart.legend.labels.template.text = "[font-size: 10px]{category}: {value}[/]";
 
   }
 
