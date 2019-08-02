@@ -4,7 +4,7 @@ jQuery(document).ready(function($) {
   // update_needed();
 
   $('#active_contacts').html(data.active_contacts)
-  $('#needs_accepting').html(data.accept_needed_count)
+  $('#needs_accepting').html(data.accept_needed.total)
   let needs_accepting_list = ``
   data.accept_needed.contacts.slice(0, 3).forEach( contact =>{
     needs_accepting_list += `<div style="margin-top:10px; display: flex">
@@ -24,7 +24,7 @@ jQuery(document).ready(function($) {
   /**
    * Update Needed
    */
-  $('#update_needed').html(data.update_needed_count)
+  $('#update_needed').html(data.update_needed.total)
   let up_list = ``
   data.update_needed.contacts.slice(0, 3).forEach( contact =>{
     let row = `<div style="margin-top:10px">
@@ -48,11 +48,24 @@ jQuery(document).ready(function($) {
 
 
 
+  const options = {
+      type: 'GET',
+      contentType: 'application/json; charset=utf-8',
+      dataType: 'json',
+      url: `${wpApiShare.root}dt-dashboard/v1/stats`,
+      beforeSend: xhr => {
+          xhr.setRequestHeader('X-WP-Nonce', wpApiShare.nonce);
+      }
+  }
+  jQuery.ajax(options).then(resp=>{
+    $(".loading-spinner").removeClass("active")
+    _.merge(data, resp)
+    console.log(data);
+    benchmarks_chart()
+    seeker_path_chart()
+    milestones()
+  })
 
-
-  benchmarks_chart()
-  seeker_path_chart()
-  milestones()
 
 
   function update_needed(){
@@ -71,7 +84,7 @@ jQuery(document).ready(function($) {
     pieSeries.ticks.template.disabled = true;
 
     let label = chart.seriesContainer.createChild(am4core.Label);
-    label.text =  data.update_needed_count;
+    label.text =  data.update_needed.total;
     label.horizontalCenter = "middle";
     label.verticalCenter = "middle";
     label.fontSize = 50;
@@ -119,7 +132,7 @@ jQuery(document).ready(function($) {
 
     chart.data = [{
       "label": "Update Needed",
-      "value": data.update_needed_count,
+      "value": data.update_needed.total,
       "radius": 200
     },{
       "label": "Good",

@@ -84,7 +84,10 @@ get_header();
                 <div class="card">
                     <div style="display: flex; flex-wrap: wrap">
                         <div style="flex-basis: 40%">
-                            <h2 style="margin:50px"><?php esc_html_e( "Personal Benchmarks", 'disciple_tools' ) ?></h2>
+                            <h2 style="margin:50px; display: inline-block"><?php esc_html_e( "Personal Benchmarks", 'disciple_tools' ) ?>
+                                <div style="display: inline-block" class="loading-spinner active"></div>
+                            </h2>
+
                             <ul style="list-style: none; margin-left: 50px">
                                 <li>
                                     <div style="background-color: #C7E3FF; border-radius: 5px; height: 20px; width:20px; display: inline-block"></div>
@@ -112,6 +115,7 @@ get_header();
                     <div class="card">
                         <span class="card-title" style="text-align: center; margin-bottom: 15px">
                             <?php echo esc_html__( 'Faith Milestone Totals', 'disciple_tools' ) ?>
+                             <div style="display: inline-block" class="loading-spinner active"></div>
                         </span>
                         <p style="text-align: center; margin-bottom: 30px"><?php esc_html_e( "Milestones that you have personally moved forward", 'disciple_tools' ) ?></p>
                         <div >
@@ -125,6 +129,7 @@ get_header();
                     <div class="card">
                         <span class="card-title" style="text-align: center; margin-bottom: 15px">
                             <?php esc_html_e( "Seeker Path Progress", 'disciple_tools' ) ?>
+                             <div style="display: inline-block" class="loading-spinner active"></div>
                         </span>
                         <div id="seeker_path_chart" style="height:400px; width;200px; padding-left: 20px; padding-right: 20px"></div>
 

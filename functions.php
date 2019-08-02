@@ -370,6 +370,8 @@ else {
              */
 
             require_once( get_template_directory() . '/dt-metrics/dashboard.php' );
+            new Disciple_Tools_Dashboard();
+
             $this->workflows = Disciple_Tools_Workflows::instance();
 
             /**

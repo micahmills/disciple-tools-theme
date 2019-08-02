@@ -4,13 +4,28 @@ if ( !defined( 'ABSPATH' ) ) {
 }
 
 class Disciple_Tools_Dashboard{
-    public function __construct() {}
+
+    private $version = 1;
+    private $context = "dt-dashboard";
+    private $namespace;
+
+    public function __construct() {
+        $this->namespace = $this->context . "/v" . intval( $this->version );
+        add_action( 'rest_api_init', [ $this, 'add_api_routes' ] );
+    }
+    public function add_api_routes() {
+        register_rest_route(
+            $this->namespace, '/stats', [
+                'methods'  => 'GET',
+                'callback' => [ $this, 'get_other_stats' ],
+            ]
+        );
+    }
 
 
 
     public static function get_data(){
 
-        $counts = Disciple_Tools_Contacts::get_count_of_contacts();
         $to_accept = Disciple_Tools_Contacts::search_viewable_contacts( [
             'overall_status' => [ 'assigned' ],
             'assigned_to'    => [ 'me' ]
@@ -32,23 +47,48 @@ class Disciple_Tools_Dashboard{
             $days_different = (int) round( ( $now - (int) $last_modified ) / ( 60 * 60 * 24 ) );
             $contact->last_modified_msg = esc_attr( sprintf( __( '%s days since last update', 'disciple_tools' ), $days_different ), 'disciple_tools' );
         }
+        $my_active_contacts = self::get_active_contacts();
 
-        $seeker_path_personal = self::query_my_contacts_progress();
-        $seeker_path = self::query_project_contacts_progress();
-        $milestones = self::milestones();
-
-        $test = "";
         return [
-            "active_contacts" => $counts["active"],
-            "accept_needed_count" => $counts["needs_accepted"],
-            "update_needed_count" => $counts["update_needed"],
+            "active_contacts" => $my_active_contacts,
             "accept_needed" => $to_accept,
             "update_needed" => $update_needed,
-            "benchmarks" => self::get_personal_benchmarks(),
-            "seeker_path" => $seeker_path,
+        ];
+    }
+
+    public function get_other_stats(){
+        $seeker_path_personal = self::query_my_contacts_progress();
+        $milestones = self::milestones();
+        $personal_benchmarks = self::get_personal_benchmarks();
+        return [
+            "benchmarks" => $personal_benchmarks,
             "seeker_path_personal" => $seeker_path_personal,
             "milestones" => $milestones
         ];
+    }
+
+    private static function get_active_contacts(){
+        global $wpdb;
+        $my_active_contacts = $wpdb->get_var( $wpdb->prepare( "
+            SELECT count(a.ID)
+              FROM $wpdb->posts as a
+              INNER JOIN $wpdb->postmeta as assigned_to
+                ON a.ID=assigned_to.post_id
+                  AND assigned_to.meta_key = 'assigned_to'
+                  AND assigned_to.meta_value = CONCAT( 'user-', %s )
+                JOIN $wpdb->postmeta as b
+                  ON a.ID=b.post_id
+                     AND b.meta_key = 'overall_status'
+                         AND b.meta_value = 'active'
+                INNER JOIN $wpdb->postmeta as e
+                  ON a.ID=e.post_id
+                     AND (( e.meta_key = 'type'
+                            AND ( e.meta_value = 'media' OR e.meta_value = 'next_gen' ) )
+                          OR e.meta_key IS NULL)
+              WHERE a.post_status = 'publish'
+              AND post_type = 'contacts'
+              ", get_current_user_id() ) );
+        return $my_active_contacts;
     }
 
     private static function get_personal_benchmarks(){
