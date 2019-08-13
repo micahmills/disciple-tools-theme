@@ -31,8 +31,6 @@
   }
 
   let tabQueryParam = $.urlParam( 'list-tab' )
-  console.log(tabQueryParam);
-
 
   let showClosedCookie = getCookie("show_closed")
   let showClosedCheckbox = $('#show_closed')
