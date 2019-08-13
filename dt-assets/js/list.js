@@ -668,12 +668,12 @@
    */
 
   /**
-   * geonames
+   * location_grid
    */
   let loadLocationTypeahead = ()=> {
-    if (!window.Typeahead['.js-typeahead-geonames']) {
+    if (!window.Typeahead['.js-typeahead-location_grid']) {
       $.typeahead({
-        input: '.js-typeahead-geonames',
+        input: '.js-typeahead-location_grid',
         minLength: 0,
         accent: true,
         searchOnFocus: true,
@@ -691,11 +691,11 @@
           used: {
             display: "name",
             ajax: {
-              url: wpApiShare.root + 'dt/v1/mapping_module/search_geonames_by_name',
+              url: wpApiShare.root + 'dt/v1/mapping_module/search_location_grid_by_name',
               data: {
                 s: "{{query}}",
                 filter: function () {
-                  return _.get(window.Typeahead['.js-typeahead-geonames'].filters.dropdown, 'value', 'all')
+                  return _.get(window.Typeahead['.js-typeahead-location_grid'].filters.dropdown, 'value', 'all')
                 }
               },
               beforeSend: function (xhr) {
@@ -706,7 +706,7 @@
                   if (typeof typeaheadTotals !== "undefined") {
                     typeaheadTotals.field = data.total
                   }
-                  return data.geonames
+                  return data.location_grid
                 }
               }
             }
@@ -720,7 +720,7 @@
           data: [],
           callback: {
             onCancel: function (node, item) {
-              $(`.current-filter[data-id="${item.ID}"].geonames`).remove()
+              $(`.current-filter[data-id="${item.ID}"].location_grid`).remove()
               _.pullAllBy(newFilterLabels, [{id: item.ID}], "id")
             }
           }
@@ -728,7 +728,7 @@
         callback: {
           onResult: function (node, query, result, resultCount) {
             let text = TYPEAHEADS.typeaheadHelpText(resultCount, query, result)
-            $('#geonames-result-container').html(text);
+            $('#location_grid-result-container').html(text);
           },
           onReady(){
             this.filters.dropdown = {key: "group", value: "used", template: "Used Locations"}
@@ -738,12 +738,12 @@
               .html("Used Locations");
           },
           onHideLayout: function () {
-            $('#geonames-result-container').html("");
+            $('#location_grid-result-container').html("");
           },
           onClick: function (node, a, item) {
-            let name = _.get(wpApiListSettings, `custom_fields_settings.geonames.name`, 'geonames')
-            newFilterLabels.push({id: item.ID, name: `${name}:${item.name}`, field: "geonames"})
-            selectedFilters.append(`<span class="current-filter geonames" data-id="${_.escape( item.ID )}">${_.escape( name )}:${_.escape( item.name )}</span>`)
+            let name = _.get(wpApiListSettings, `custom_fields_settings.location_grid.name`, 'location_grid')
+            newFilterLabels.push({id: item.ID, name: `${name}:${item.name}`, field: "location_grid"})
+            selectedFilters.append(`<span class="current-filter location_grid" data-id="${_.escape( item.ID )}">${_.escape( name )}:${_.escape( item.name )}</span>`)
           }
         }
       });
@@ -1043,7 +1043,7 @@
       newFilterLabels = filter.labels
       let connectionTypeKeys = Object.keys(wpApiListSettings.connection_types)
       connectionTypeKeys.push("assigned_to")
-      connectionTypeKeys.push("geonames")
+      connectionTypeKeys.push("location_grid")
       newFilterLabels.forEach(label=>{
         selectedFilters.append(`<span class="current-filter ${_.escape( label.field )}" data-id="${_.escape( label.id )}">${_.escape( label.name )}</span>`)
         let type = _.get(wpApiListSettings, `custom_fields_settings.${label.field}.type`)
