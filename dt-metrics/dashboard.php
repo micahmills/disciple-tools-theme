@@ -12,6 +12,9 @@ class Disciple_Tools_Dashboard{
     public function __construct() {
         $this->namespace = $this->context . "/v" . intval( $this->version );
         add_action( 'rest_api_init', [ $this, 'add_api_routes' ] );
+        add_filter( 'dt_front_page', [ $this, 'front_page' ] );
+        add_filter( 'desktop_navbar_menu_options', [ $this, 'nav_menu' ] );
+        add_filter( 'off_canvas_menu_options', [ $this, 'nav_menu' ] );
     }
     public function add_api_routes() {
         register_rest_route(
@@ -22,6 +25,17 @@ class Disciple_Tools_Dashboard{
         );
     }
 
+    public function front_page( $page ){
+        return site_url( '/dashboard/' );
+    }
+
+    public function nav_menu( $tabs ){
+        array_unshift( $tabs, [
+            "link" => site_url( '/dashboard/' ),
+            "label" => __( "Dashboard", 'disciple_tools' )
+        ] );
+        return $tabs;
+    }
 
 
     public static function get_data(){

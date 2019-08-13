@@ -60,7 +60,6 @@ jQuery(document).ready(function($) {
   jQuery.ajax(options).then(resp=>{
     $(".loading-spinner").removeClass("active")
     _.merge(data, resp)
-    console.log(data);
     benchmarks_chart()
     seeker_path_chart()
     milestones()
