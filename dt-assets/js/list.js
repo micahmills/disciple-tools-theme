@@ -333,8 +333,13 @@
       return '<a href="' + _.escape(group.permalink) + '">' + group.post_title + "</a>";
     }).join(", ");
 
-    const locale = document.querySelector('html').getAttribute('lang').replace("_", "-");
-
+    const langTag = document.querySelector('html').getAttribute('lang')
+    if (langTag) {
+      var locale = langTag.replace("_", "-");
+    } else {
+      var locale = "en"
+    }
+console.log(locale);
     const last_modified = new Date(contact.last_modified*1000).toLocaleDateString(locale).slice(0, 15);
 
     const context = _.assign({last_modified: 0}, contact, wpApiListSettings, {
