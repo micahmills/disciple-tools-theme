@@ -322,8 +322,6 @@
 
     const last_modified = new Date(contact.last_modified*1000).toLocaleDateString(locale).slice(0, 15);
 
-    const last_modified = new Date(contact.last_modified*1000).toLocaleDateString(locale).slice(0, 15);
-
     const context = _.assign({last_modified: 0}, contact, wpApiListSettings, {
       index,
       status,
