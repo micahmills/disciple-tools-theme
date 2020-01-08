@@ -3,7 +3,7 @@
 /**
  * Disciple Tools
  *
- * @class      Disciple_Tools_Tab_Custom_Fields
+ * @class      Disciple_Tools_Tab_Custom_Translations
  * @version    0.1.0
  * @since      0.1.0
  * @package    Disciple_Tools
@@ -15,9 +15,9 @@ if ( !defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class Disciple_Tools_Tab_Custom_Fields
+ * Class Disciple_Tools_Tab_Custom_Translations
  */
-class Disciple_Tools_Tab_Custom_Fields extends Disciple_Tools_Abstract_Menu_Base
+class Disciple_Tools_Tab_Custom_Translations extends Disciple_Tools_Abstract_Menu_Base
 {
 
     private static $_instance = null;
@@ -43,14 +43,15 @@ class Disciple_Tools_Tab_Custom_Fields extends Disciple_Tools_Abstract_Menu_Base
     } // End __construct()
 
     public function add_submenu() {
-        add_submenu_page( 'dt_options', __( 'Custom Fields', 'disciple_tools' ), __( 'Custom Fields', 'disciple_tools' ), 'manage_dt', 'dt_options&tab=custom-fields', [ 'Disciple_Tools_Settings_Menu', 'content' ] );
+        add_submenu_page( 'dt_options', __( 'Custom Translations', 'disciple_tools' ), __( 'Custom Fields Translations', 'disciple_tools' ), 'manage_dt', 'dt_options&tab=custom-translations', [ 'Disciple_Tools_Settings_Menu', 'content' ] );
     }
 
     public function add_tab( $tab ) {
         ?>
-        <a href="<?php echo esc_url( admin_url() ) ?>admin.php?page=dt_options&tab=custom-fields"
-           class="nav-tab <?php echo esc_html( $tab == 'custom-fields' ? 'nav-tab-active' : '' ) ?>">
-            <?php echo esc_html__( 'Custom Fields' ) ?>
+        <?php dt_write_log( $tab ); ?>
+        <a href="<?php echo esc_url( admin_url() ) ?>admin.php?page=dt_options&tab=custom-translations"
+           class="nav-tab <?php echo esc_html( $tab == 'custom-translations' ? 'nav-tab-active' : '' ) ?>">
+            <?php echo esc_html__( 'Custom Translations' ) ?>
         </a>
         <?php
     }
@@ -72,72 +73,16 @@ class Disciple_Tools_Tab_Custom_Fields extends Disciple_Tools_Abstract_Menu_Base
      * @param $tab
      */
     public function content( $tab ) {
-        if ( 'custom-fields' == $tab ) :
-            $show_add_field = false;
+        if ( 'custom-translations' == $tab ) :
             $field_key = false;
             $post_type = null;
             $this->template( 'begin' );
 
-            if ( isset( $_POST['field_select_nonce'] ) ){
-                if ( !wp_verify_nonce( sanitize_key( $_POST['field_select_nonce'] ), 'field_select' ) ) {
-                    return;
-                }
-                if ( isset( $_POST["show_add_new_field"] ) ){
-                    $show_add_field = true;
-                } else if ( !empty( $_POST["field-select"] ) ){
-                    $field = explode( "_", sanitize_text_field( wp_unslash( $_POST["field-select"] ) ), 2 );
-                    $field_key = $field[1];
-                    $post_type = $field[0];
-                }
-            }
 
 
-            /*
-             * Process Add field
-             */
-            if ( isset( $_POST["new_field_type"], $_POST['field_add_nonce'] ) ){
-                if ( !wp_verify_nonce( sanitize_key( $_POST['field_add_nonce'] ), 'field_add' ) ) {
-                    return;
-                }
-                $post_submission = [];
-                foreach ( $_POST as $key => $value ){
-                    $post_submission[sanitize_text_field( wp_unslash( $key ) )] = sanitize_text_field( wp_unslash( $value ) );
-                }
-                $field_key = $this->process_add_field( $post_submission );
-                if ( $field_key === false ){
-                    $show_add_field = true;
-                }
-                $post_type = $post_submission["post_type"];
-            }
-            /*
-             * Process Edit field
-             */
-            if ( isset( $_POST["field_edit_nonce"] ) ){
-                if ( !wp_verify_nonce( sanitize_key( $_POST['field_edit_nonce'] ), 'field_edit' ) ) {
-                    return;
-                }
-                $post_submission = [];
-                foreach ( $_POST as $key => $value ){
-                    $post_submission[sanitize_text_field( wp_unslash( $key ) )] = sanitize_text_field( wp_unslash( $value ) );
-                }
-                $this->process_edit_field( $post_submission );
-            }
-
-            $this->box( 'top', __( 'Add new fields or modify existing ones on Contacts or Groups', 'disciple_tools' ) );
-            $this->field_select();
+            $this->box( 'top', __( 'All Custom Fields, Tiles, and Lists for Translation', 'disciple_tools' ) );
+            $this->list_custom_terms();
             $this->box( 'bottom' );
-
-
-            if ( $show_add_field ){
-                $this->box( 'top', __( "Create new field", 'disciple_tools' ) );
-                $this->add_field();
-                $this->box( 'bottom' );
-            }
-            if ( $this->get_post_fields( $post_type )[$field_key] && $post_type ){
-                $this->box( 'top', $this->get_post_fields( $post_type )[$field_key]["name"] );
-                $this->edit_field( $field_key, $post_type );
-                $this->box( 'bottom' );
-            }
 
             $this->template( 'right_column' );
 
@@ -145,60 +90,54 @@ class Disciple_Tools_Tab_Custom_Fields extends Disciple_Tools_Abstract_Menu_Base
         endif;
     }
 
-    private function field_select(){
+    private function list_custom_terms(){
         global $wp_post_types;
-        $select_options = [];
         $post_types = apply_filters( 'dt_registered_post_types', [ 'contacts', 'groups' ] );
-        foreach ( $post_types as $post_type ){
-            $select_options[$post_type] = [];
+        $available_translations = dt_get_available_languages();
+        $all_custom_terms = [];
+
+        echo '<table class="widefat">';
+        foreach ( $post_types as $post_type ){ ?>
+            <thead>
+            <tr>
+            <th colspan="11"><h3><?php echo esc_html( $post_type ); ?></h3></th>
+            </tr>
+            <tr>
+            <th><?php esc_html_e( "Default Label" ); ?></th>
+            <?php foreach ( $available_translations as $translation) {
+                echo "<th>". esc_html( $translation["native_name"] ) . "</th>";
+            }?>
+            </tr></thead><tr>
+
+            <?php
             $fields = $this->get_post_fields( $post_type );
             if ( $fields ){
                 foreach ( $fields as $field_key => $field_value ){
                     if ( isset( $field_value["customizable"] ) ){
-                        $select_options[ $post_type ][ $field_key ] = $field_value["name"] ?? $field_key;
+                        dt_write_log( "field value = " );
+                        foreach ( $field_value["default"] as $term ){
+                            echo "<td>" . esc_html( $term["label"] ) . "</td>";
+                            foreach ( $available_translations as $translation) {
+                                dt_write_log( $translation );
+                                $translation_label = $translation_label = $term["label_". $translation['language']] ?? ''
+                                ?>
+                                <td><input type="text" name="<?php esc_attr( $translation_label )?>" value="<?php esc_attr(
+                                $translation_label ) ?>"></td>
+                                <?php
+                            }?>
+                            </tr> <!-- end term row -->
+                            <?php
+                        }
                     }
                 }
             }
-        }
-
-        ?>
-        <form method="post">
-            <input type="hidden" name="field_select_nonce" id="field_select_nonce" value="<?php echo esc_attr( wp_create_nonce( 'field_select' ) ) ?>" />
-            <table>
-                <tr>
-                    <td style="vertical-align: middle">
-                        <label for="field-select"><?php esc_html_e( "Modify an existing field", 'disciple_tools' ) ?></label>
-                    </td>
-                    <td>
-                        <select id="field-select" name="field-select">
-                            <option></option>
-                            <?php foreach ( $post_types as $post_type ) : ?>
-                                <option disabled>---<?php echo esc_html( $wp_post_types[$post_type]->label ); ?> Fields---</option>
-                                <?php foreach ( $select_options[$post_type] as $option_key => $option_name ) : ?>
-
-                                <option value="<?php echo esc_html( $post_type . '_' . $option_key ) ?>">
-                                    <?php echo esc_html( $option_name ) ?>
-                                </option>
-                                <?php endforeach; ?>
-                            <?php endforeach; ?>
-                        </select>
-                        <button type="submit" class="button" name="field_selected"><?php esc_html_e( "Select", 'disciple_tools' ) ?></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="vertical-align: middle">
-                        <?php esc_html_e( "Create a new field", 'disciple_tools' ) ?>
-                    </td>
-                    <td>
-                        <button type="submit" class="button" name="show_add_new_field"><?php esc_html_e( "Create new field", 'disciple_tools' ) ?></button>
-                    </td>
-                </tr>
-            </table>
-
-            <br>
-        </form>
-
-    <?php }
+        } ?>
+        </tr>
+        <table>
+        <?php
+        // dt_write_log( "all Terms Array");
+        // dt_write_log( $all_terms );
+    }
 
     private function edit_field( $field_key, $post_type ){
 
@@ -448,17 +387,9 @@ class Disciple_Tools_Tab_Custom_Fields extends Disciple_Tools_Abstract_Menu_Base
                 if ( !empty( $post_submission["add_option"] ) ){
                     $option_key = dt_create_field_key( $post_submission["add_option"] );
                     if ( !isset( $field_options[$option_key] )){
-                        $available_translations = dt_get_available_languages();
-                        dt_write_log( $available_translations );
                         if ( !empty( $option_key ) && !empty( $post_submission["add_option"] )){
                             $field_options[ $option_key ] = [ "label" => $post_submission["add_option"] ];
-
                             $custom_field["default"][$option_key] = [ "label" => $post_submission["add_option"] ];
-
-                            foreach ($available_translations as $translation) {
-                                $custom_field["default"][$option_key]["label_". $translation['language']] = "";
-                            }
-                            dt_write_log( $custom_field );
                         }
                     } else {
                         self::admin_notice( __( "This option already exists", 'disciple_tools' ), "error" );
@@ -635,6 +566,4 @@ class Disciple_Tools_Tab_Custom_Fields extends Disciple_Tools_Abstract_Menu_Base
         <?php
     }
 }
-Disciple_Tools_Tab_Custom_Fields::instance();
-
-
+Disciple_Tools_Tab_Custom_Translations::instance();
