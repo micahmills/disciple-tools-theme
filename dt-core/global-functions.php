@@ -189,6 +189,12 @@ if ( ! defined( 'DT_FUNCTIONS_READY' ) ){
                 "english_name" => "Swahili",
                 "iso" => [ "sw" ]
             ];
+            // $translations["fa_IR"] = [
+            //     "language" => "fa_IR",
+            //     "native_name" => "فارسی",
+            //     "english_name" => "Persian",
+            //     "iso" => [ "fa" ]
+            // ];
             return $translations;
         }
     }

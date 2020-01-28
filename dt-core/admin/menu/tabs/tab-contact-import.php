@@ -342,6 +342,8 @@ class Disciple_Tools_Contact_Import_Tab extends Disciple_Tools_Abstract_Menu_Bas
             // a per-item action
             function doEach( item, done ) {
                 console.log('starting ...' );
+                console.log(item);
+                debugger;
                 jQuery.ajax({
                     type: "POST",
                     data: item,

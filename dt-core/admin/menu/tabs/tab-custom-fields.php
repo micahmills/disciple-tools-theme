@@ -207,7 +207,6 @@ class Disciple_Tools_Tab_Custom_Fields extends Disciple_Tools_Abstract_Menu_Base
             wp_die( 'Failed to get dt_site_custom_lists() from options table. Or field is missing the "default" field key' );
         }
         $field = $post_fields[$field_key];
-
         $defaults = [];
         if ( $post_type === "contacts" ){
             $defaults = Disciple_Tools_Contact_Post_Type::instance()->get_contact_field_defaults();
