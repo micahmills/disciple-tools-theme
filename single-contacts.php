@@ -348,12 +348,12 @@ if ( ! current_user_can( 'access_contacts' ) ) {
 
                                     foreach ($contact_fields["seeker_path"]["default"] as $key => $option){
                                         $value = $option["label"] ?? "";
-                                        if ( $contact["seeker_path"]["key"] === $key ) {
+                                        if ( $contact["seeker_path"]["key"] === $key ) :
                                             ?>
                                             <option value="<?php echo esc_html( $key ) ?>" selected><?php echo esc_html( $value ); ?></option>
-                                        <?php } else { ?>
+                                        <?php else : ?>
                                             <option value="<?php echo esc_html( $key ) ?>"><?php echo esc_html( $value ); ?></option>
-                                        <?php }
+                                        <?php endif;
                                     }
                                     $keys = array_keys( $contact_fields["seeker_path"]["default"] );
                                     $path_index = array_search( $contact["seeker_path"]["key"], $keys ) ?? 0;
@@ -383,14 +383,10 @@ if ( ! current_user_can( 'access_contacts' ) ) {
                                     </div>
 
                                     <div class="baptism_date">
-                                        <div class="section-subheader"><?php esc_html_e( 'Baptism Date', 'disciple_tools' )?>
-                                            <button class="help-button" data-section="baptism-date-help-text">
-                                                <img class="help-icon" src="<?php echo esc_html( get_template_directory_uri() . '/dt-assets/images/help.svg' ) ?>"/>
-                                            </button>
-                                        </div>
+                                        <div class="section-subheader"><?php echo esc_html( $contact_fields["baptism_date"]["name"] )?></div>
 
                                         <div class="baptism_date input-group">
-                                            <input id="baptism_date" class="input-group-field dt_date_picker" type="text" value="<?php echo esc_html( $contact["baptism_date"]["formatted"] ?? '' )?>" >
+                                            <input id="baptism_date" class="input-group-field dt_date_picker" type="text" value="<?php echo esc_html( $contact["baptism_date"]["timestamp"] ?? '' )?>" >
                                             <div class="input-group-button">
                                                 <button id="clear-date-button" class="button alert" title="Delete Date">x</button>
                                             </div>
@@ -652,8 +648,8 @@ if ( ! current_user_can( 'access_contacts' ) ) {
                 </div>
             </div>
 
-            <span class="section-subheader"><?php esc_html_e( "Baptism Date", 'disciple_tools' ) ?></span>
-            <input type="text" data-date-format='yy-mm-dd' value="<?php echo esc_html( $contact["baptism_date"]["formatted"] ?? '' )?>" id="modal-baptism-date-picker">
+            <span class="section-subheader"><?php echo esc_html( $contact_fields["baptism_date"]["name"] )?></span>
+            <input type="text" data-date-format='yy-mm-dd' value="<?php echo esc_html( $contact["baptism_date"]["timestamp"] ?? '' );?>" id="modal-baptism-date-picker" autocomplete="off">
 
 <!--            <span class="section-subheader">--><?php //esc_html_e( "Baptism Generation", 'disciple_tools' ) ?><!--</span>-->
 <!--            <input type="number" value="" id="modal-baptism_generation">-->
