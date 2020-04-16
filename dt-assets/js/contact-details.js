@@ -855,7 +855,8 @@ jQuery(document).ready(function($) {
     })
     $("#edit-contact_address").html(addressHTML)
 
-    $('#contact-details-edit-modal').foundation('open');
+    $('#contact-details-edit-modal').foundation('open')
+    $('#contact-details-edit-modal input:first').focus();
 
     loadPeopleGroupTypeahead()
     leadSourcesTypeahead().catch(err => { console.log(err) })
