@@ -32,7 +32,22 @@
     opacity: .5;
 }
 
-
+.button.clear-date-button {
+    background: #eee;
+    border: 1px solid #cacaca;
+    border-left: 0;
+    color: #cc4b37;
+    &:hover {
+        background-color: #cc4b37;
+    color: #fefefe;
+    }
+}
+html[dir='rtl'] {
+    .button.clear-date-button {
+        border: 1px solid #cacaca;
+        border-right: 0;
+    }
+}
 /**
     Item details
  */
@@ -141,6 +156,10 @@ DT comments and activity
 .comment-bubble {
     word-wrap: break-word;
     margin: 0 10px 0 0;
+
+    .comment-text {
+        min-height: 1em;
+    }
 }
 
 .comment-controls {
