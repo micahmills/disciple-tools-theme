@@ -100,7 +100,8 @@ else {
         public $core = [];
         public $hooks = [];
         public $logging = [];
-        public $user_local;
+        public $user_locale;
+        public $site_locale;
 
         /**
          * Disciple_Tools The single instance of Disciple_Tools.
@@ -156,7 +157,8 @@ else {
             $this->admin_css_url = get_template_directory_uri() . '/dt-core/admin/css/';
             $this->admin_css_path = get_template_directory() . '/dt-core/admin/css/';
 
-            $this->user_local = get_user_locale();
+            $this->user_locale = get_user_locale();
+            $this->site_locale = get_locale();
 
             set_up_wpdb_tables();
 
@@ -225,7 +227,11 @@ else {
              * @return string
              */
             add_filter( 'locale', function() {
-                return $this->user_local;
+                if ( is_admin() ) {
+                    return $this->site_locale;
+                } else {
+                    return $this->user_locale;
+                }
             } );
 
             /**
@@ -482,6 +488,8 @@ else {
         $wpdb->dt_share = $wpdb->prefix . 'dt_share';
         $wpdb->dt_notifications = $wpdb->prefix . 'dt_notifications';
         $wpdb->dt_post_user_meta = $wpdb->prefix . 'dt_post_user_meta';
+        $wpdb->dt_location_grid = $wpdb->prefix . 'dt_location_grid';
+        $wpdb->dt_location_grid_meta = $wpdb->prefix . 'dt_location_grid_meta';
 
         $more_tables = apply_filters( 'dt_custom_tables', [] );
         foreach ( $more_tables as $table ){
