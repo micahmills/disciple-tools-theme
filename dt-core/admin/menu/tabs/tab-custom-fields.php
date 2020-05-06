@@ -439,7 +439,11 @@ class Disciple_Tools_Tab_Custom_Fields extends Disciple_Tools_Abstract_Menu_Base
                         $langcode = $val['language'];
                         $translation_key = "field_key_" . $field_key . "_translation-" . $langcode;
                         if ( isset( $post_submission[$translation_key] ) ) {
-                            $custom_field["translations"][$langcode] = $post_submission[$translation_key];
+                            if ( empty( $post_submission[$translation_key] ) ) {
+                                unset( $custom_field["translations"][$langcode] );
+                            } else {
+                                $custom_field["translations"][$langcode] = $post_submission[$translation_key];
+                            }
                         }
                     }
                 }
@@ -456,7 +460,12 @@ class Disciple_Tools_Tab_Custom_Fields extends Disciple_Tools_Abstract_Menu_Base
                             if ( strpos( $translation_langcode, '-' ) !== false ) {
                                 $translation_langcode = substr( $translation_langcode, 3 );
                             }
-                            $custom_field["default"][$option_key]["translations"][$translation_langcode] = $val;
+
+                            if ( empty( $post_submission[$key] ) ) {
+                                unset( $custom_field["default"][$option_key]["translations"][$translation_langcode] );
+                            } else {
+                                $custom_field["default"][$option_key]["translations"][$translation_langcode] = $val;
+                            }
                         } else {
                             $option_key = substr( $key, 13 );
                             if ( isset( $field_options[$option_key]["label"] ) ){
@@ -511,6 +520,7 @@ class Disciple_Tools_Tab_Custom_Fields extends Disciple_Tools_Abstract_Menu_Base
             if ( !empty( $custom_field )){
                 $field_customizations[$post_type][$field_key] = $custom_field;
             }
+            dt_write_log($field_customizations);
             update_option( "dt_field_customizations", $field_customizations );
             wp_cache_delete( $post_type . "_field_settings" );
         }
