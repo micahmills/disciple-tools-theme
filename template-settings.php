@@ -97,7 +97,11 @@ $translations = dt_get_translations();
 
                                 <p>
                                     <strong><?php esc_html_e( 'Roles', 'disciple_tools' ); ?></strong><br>
-                                    <?php echo esc_html( implode( ", ", wp_get_current_user()->roles ) ); ?>
+                                    <?php
+                                    foreach (wp_get_current_user()->roles as $role_name ) {
+                                        echo esc_html( translate_user_role( $role_name, 'disciple_tools' ). ", "  );
+                                    }
+                                    ?>
                                 </p>
 
                             </div>
