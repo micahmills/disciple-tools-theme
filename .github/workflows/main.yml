@@ -12,4 +12,4 @@ jobs:
         with:
           find: "_."
           replace: "window.lodash."
-          include: "*.js" # Do not modify Python files
+          include: "comments.js" # Do not modify Python files
