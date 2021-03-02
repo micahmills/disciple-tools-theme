@@ -121,9 +121,9 @@ gulp.task('scripts', function () {
 
 //Find and replace lodash _. notation with window.lodash 'dt-assets/**/*.js'
 gulp.task('lodash', function(){
- return gulp.src(['**/*.js'])
-    .pipe(replace('_.', 'window.lodash.'))
-    .pipe(gulp.dest(BUILD_DIRS.scripts));
+  return gulp.src(['dt-assets/**/*.js'])
+     .pipe(replace('_.', 'window.lodash.'))
+     .pipe(gulp.dest('dt-assets/build/js/'));
 });
 
 // Compile Sass, Autoprefix and minify
