@@ -15,6 +15,8 @@ var gulp = require('gulp'),
   merge = require('merge-stream'),
   postcss = require('gulp-postcss'),
   cssnano = require('cssnano');
+  replace = require('gulp-replace');
+
 
 /**
  * DEFINE GULP VARIABLE VALUES TO MATCH YOUR PROJECT NEEDS
@@ -117,6 +119,13 @@ gulp.task('scripts', function () {
     .pipe(gulp.dest(BUILD_DIRS.scripts));
 });
 
+//Find and replace lodash _. notation with window.lodash 'dt-assets/**/*.js'
+gulp.task('lodash', function(){
+ return gulp.src(['**/*.js'])
+    .pipe(replace('_.', 'window.lodash.'))
+    .pipe(gulp.dest(BUILD_DIRS.scripts));
+});
+
 // Compile Sass, Autoprefix and minify
 gulp.task('styles', function () {
   return gulp.src(SOURCE.styles)
@@ -138,7 +147,7 @@ gulp.task('styles', function () {
 });
 
 // Run styles, scripts and foundation-js
-gulp.task('default', gulp.parallel('styles', 'scripts'));
+gulp.task('default', gulp.parallel('styles', 'scripts', 'lodash'));
 
 
 /**
