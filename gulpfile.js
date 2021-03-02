@@ -123,6 +123,8 @@ gulp.task('scripts', function () {
 gulp.task('lodash', function(){
   return gulp.src(['dt-assets/**/*.js'])
      .pipe(replace('_.', 'window.lodash.'))
+     .pipe(plugin.uglify())
+     .pipe(rename({ suffix: '.min' }))
      .pipe(gulp.dest('dt-assets/build'));
 });
 
