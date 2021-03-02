@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: My Workflow
+name: lodash replace
 on: [push, pull_request]
 jobs:
   build:
@@ -12,4 +12,4 @@ jobs:
         with:
           find: "_."
           replace: "window.lodash."
-          exclude: "*.js" # Do not modify Python files
+          include: "*.js" # Do not modify Python files
