@@ -123,7 +123,16 @@ gulp.task('scripts', function () {
 gulp.task('lodash', function(){
   return gulp.src(['dt-assets/**/*.js'])
      .pipe(replace('_.', 'window.lodash.'))
-     .pipe(plugin.uglify())
+     .pipe(plugin.plumber(function (error) {
+        log.error(error.message);
+        this.emit('end');
+      }))
+      .pipe(plugin.sourcemaps.init())
+      .pipe(plugin.babel({
+        presets: ['env'],
+        compact: true,
+        ignore: ['what-input.js']
+      }))
      .pipe(rename({ suffix: '.min' }))
      .pipe(gulp.dest('dt-assets/build'));
 });
