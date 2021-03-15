@@ -21,7 +21,7 @@ jQuery(document).ready(function($) {
         commentButton.toggleClass('loading')
         commentInput.attr("disabled", true)
         commentButton.attr("disabled", true)
-        rest_api.post_comment(postType, postId, _.escape(comment_plain_text), commentType ).then(data => {
+        rest_api.post_comment(postType, postId, comment_plain_text, commentType ).then(data => {
           let updated_comment = data.comment || data
           commentInput.val("").trigger( "change" )
           commentButton.toggleClass('loading')
@@ -57,7 +57,7 @@ jQuery(document).ready(function($) {
       user_id: currentContact.post_author,
     }
     activityData.push(createdContactActivityItem)
-    if (_.get(settings, "post_with_fields.initial_comments")){
+    if (window.lodash.get(settings, "post_with_fields.initial_comments")){
       const initialComments = {
         hist_time: createdDate.unix()+1,
         object_note: settings.post_with_fields.initial_comments,
@@ -72,12 +72,12 @@ jQuery(document).ready(function($) {
       let field = item.meta_key
 
       if (field && field.includes("quick_button_")){
-        if (contactsDetailsWpApiSettings){
-          field = _.get(contactsDetailsWpApiSettings, `contacts_custom_fields_settings[${item.meta_key}].name`)
+        if (window.detailsSettings){
+          field = window.lodash.get(window.detailsSettings,`post_fields[${item.meta_key}].name`)
         }
-        item.action = `<a class="revert-activity dt_tooltip" data-id="${_.escape( item.histid )}">
+        item.action = `<a class="revert-activity dt_tooltip" data-id="${window.lodash.escape( item.histid )}">
           <img class="revert-arrow-img" src="${commentsSettings.template_dir}/dt-assets/images/undo.svg">
-          <span class="tooltiptext">${_.escape( field || item.meta_key )} </span>
+          <span class="tooltiptext">${window.lodash.escape( field || item.meta_key )} </span>
         </a>`
       } else {
         item.action = ''
@@ -101,7 +101,7 @@ jQuery(document).ready(function($) {
    * to match the behaviour that the user sees when editing the comment in an
    * input with dir=auto set, especially when using a right-to-left language
    * with multiple paragraphs. */
-  let commentTemplate = _.template(`
+  let commentTemplate = window.lodash.template(`
   <div class="activity-block">
     <div>
         <span class="gravatar"><img src="<%- gravatar  %>"/></span>
@@ -109,43 +109,55 @@ jQuery(document).ready(function($) {
         <span class="comment-date"> <%- date %> </span>
       </div>
     <div class="activity-text">
-    <% _.forEach(activity, function(a){
+    <% var is_Comment; var has_Comment_ID; %>
+    <% window.lodash.forEach(activity, function(a){
         if (a.comment){ %>
+          <% is_Comment = true; %>
             <div dir="auto" class="comment-bubble <%- a.comment_ID %>">
-              <div class="comment-text" dir=auto><%= a.text.replace(/\\n/g, '</div><div class="comment-text" dir=auto>') /* not escaped on purpose */ %></div>
-            <% if ( commentsSettings.google_translate_key !== "" ) { %>
-                <div class="translation-bubble" dir=auto></div>
-                <a class="translate-button showTranslation">${_.escape(commentsSettings.translations.translate)}</a>
-                <a class="translate-button hideTranslation hide">${_.escape(commentsSettings.translations.hide_translation)}</a>
-                </div>
-              <% } %>
+              <div class="comment-text" title="<%- date %>" dir=auto><%= a.text.replace(/\\n/g, '</div><div class="comment-text" dir=auto>') /* not escaped on purpose */ %></div>
             </div>
+            <% if ( commentsSettings.google_translate_key !== ""  && is_Comment && !has_Comment_ID && activity[0].comment_type !== 'duplicate' ) { %>
+              <div class="translation-bubble" dir=auto></div>
+            <% } %>
             <p class="comment-controls">
                <% if ( a.comment_ID ) { %>
+                <% has_Comment_ID = true %>
                   <a class="open-edit-comment" data-id="<%- a.comment_ID %>" data-type="<%- a.comment_type %>" style="margin-right:5px">
                       <img src="${commentsSettings.template_dir}/dt-assets/images/edit-blue.svg">
-                      ${_.escape(commentsSettings.translations.edit)}
+                      ${window.lodash.escape(commentsSettings.translations.edit)}
                   </a>
                   <a class="open-delete-comment" data-id="<%- a.comment_ID %>">
                       <img src="${commentsSettings.template_dir}/dt-assets/images/trash-blue.svg">
-                      ${_.escape(commentsSettings.translations.delete)}
+                      ${window.lodash.escape(commentsSettings.translations.delete)}
                   </a>
                <% } %>
             </p>
         <% } else { %>
-            <p class="activity-bubble">  <%- a.text %> <% print(a.action) %> </p>
+            <p class="activity-bubble" title="<%- date %>">  <%- a.text %> <% print(a.action) %> </p>
         <%  }
     }); %>
+    <% if ( commentsSettings.google_translate_key !== ""  && is_Comment && !has_Comment_ID && activity[0].comment_type !== 'duplicate'
+    ) { %>
+        <a class="translate-button showTranslation">${window.lodash.escape(commentsSettings.translations.translate)}</a>
+        <a class="translate-button hideTranslation hide">${window.lodash.escape(commentsSettings.translations.hide_translation)}</a>
+        </div>
+    <% } %>
     </div>
   </div>`
   )
 
   $(document).on("click", '.translate-button.showTranslation', function() {
-    let sourceText = $(this).siblings('.comment-text').text();
+    let combinedArray = [];
+    jQuery(this).siblings('.comment-bubble').each(function(index, comment) {
+      let sourceText = $(comment).text();
+      sourceText = sourceText.replace(/\s+/g, ' ').trim();
+      combinedArray[index] = sourceText;
+    })
+
     let translation_bubble = $(this).siblings('.translation-bubble');
     let translation_hide = $(this).siblings('.translate-button.hideTranslation');
 
-    let url = `https://translation.googleapis.com/language/translate/v2?key=${_.escape(commentsSettings.google_translate_key)}`
+    let url = `https://translation.googleapis.com/language/translate/v2?key=${window.lodash.escape(commentsSettings.google_translate_key)}`
     let targetLang;
 
     if (langcode !== "zh-TW") {
@@ -154,22 +166,41 @@ jQuery(document).ready(function($) {
       targetLang = langcode;
     }
 
-    let postData = {
-      "q": [sourceText],
-      "target": targetLang
+    function google_translate_fetch(postData, translate_button, arrayStartPos = 0) {
+      fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(postData),
+        })
+        .then(response => response.json())
+        .then((result) => {
+
+          $.each(result.data.translations, function( index, translation ) {
+            $(translation_bubble[index + arrayStartPos]).append(translation.translatedText);
+          });
+          translation_hide.removeClass('hide');
+          $(translate_button).addClass('hide');
+        })
     }
 
-    fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(postData),
-    })
-    .then(response => response.json())
-    .then((result) => {
-      translation_bubble.append(result.data.translations[0].translatedText);
-      translation_hide.removeClass('hide');
-      $(this).addClass('hide');
+    if( combinedArray.length <= 128) {
+      let postData = {
+        "q": combinedArray,
+        "target": targetLang
+      }
+      google_translate_fetch(postData, this);
+    } else {
+      var i,j,temparray,chunk = 128;
+      for (i=0,j=combinedArray.length; i<j; i+=chunk) {
+          temparray = combinedArray.slice(i,i+chunk);
 
-    })
+          let postData = {
+            "q": temparray,
+            "target": targetLang
+          }
+          google_translate_fetch(postData, this, i);
+      }
+    }
+
   })
 
   $(document).on("click", '.translate-button.hideTranslation', function() {
@@ -200,7 +231,7 @@ jQuery(document).ready(function($) {
       }
     }).catch(err=>{
       $(this).toggleClass('loading')
-      if (_.get(err, "responseJSON.message")){
+      if (window.lodash.get(err, "responseJSON.message")){
         $('.delete-comment.callout').show()
         $('#delete-comment-error').html(err.responseJSON.message)
       }
@@ -210,27 +241,27 @@ jQuery(document).ready(function($) {
   $(document).on("click", ".open-edit-comment", function () {
     let id = $(this).data("id")
     let comment_type = $(this).data("type");
-    let comment = _.find(comments, {comment_ID:id.toString()})
+    let comment = window.lodash.find(comments, {comment_ID:id.toString()})
 
     let comment_html = comment.comment_content // eg: "Tom &amp; Jerry"
 
 
-/**
- * .DT - while previewing submitted comments, enhance the presentation of special characters with a helper function below
- */
+    /**
+     * .DT - while previewing submitted comments, enhance the presentation of special characters with a helper function below
+     */
 
-function unescapeHtml(safe) {
-  return safe.replace(/&amp;/g, '&')
-      //.replace(/&lt;/g, '<')
-      //.replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&#039;/g, "'");
-}
+    function unescapeHtml(safe) {
+      return safe.replace(/&amp;/g, '&')
+          //.replace(/&lt;/g, '<')
+          //.replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&#039;/g, "'");
+    }
 
-    // textarea deos not render HTML, so using _.unescape is safe. Note that
-    // _.unescape will silently ignore invalid HTML, for instance,
-    // _.unescape("Tom & Jerry") will return "Tom & Jerry"
+    // textarea deos not render HTML, so using window.lodash.unescape is safe. Note that
+    // window.lodash.unescape will silently ignore invalid HTML, for instance,
+    // window.lodash.unescape("Tom & Jerry") will return "Tom & Jerry"
     $('#comment-to-edit').val(unescapeHtml(comment_html));
 
     $('#edit_comment_type_selector').val(comment_type);
@@ -253,7 +284,7 @@ function unescapeHtml(safe) {
       }
     }).catch(err=>{
       $(this).toggleClass('loading')
-      if (_.get(err, "responseJSON.message")){
+      if (window.lodash.get(err, "responseJSON.message")){
         $('.edit-comment.callout').show()
         $('#edit-comment-error').html(err.responseJSON.message)
       }
@@ -265,36 +296,25 @@ function unescapeHtml(safe) {
   }
 
   function display_activity_comment() {
-    let savedTabs = window.SHAREDFUNCTIONS.getCookie("contact_details_tabs")
-    let activeTabIds = [];
+    let hiddenTabs = [];
     try {
-      activeTabIds = JSON.parse(savedTabs)
+      hiddenTabs = JSON.parse( window.SHAREDFUNCTIONS.getCookie("dt_activity_comments_hidden_tabs") )
     } catch (e) {}
-    if ( activeTabIds.length === 0 ){
-      let activeTabs = $('#comment-activity-tabs .tabs-section:checked')
-      activeTabs.each((i, e)=>{
-        activeTabIds.push($(e).data("id"))
-      })
-    }
-    let possibleTabs = _.union( [ 'activity', 'comment' ], commentsSettings.additional_sections.map((l)=>{return l['key']}))
-    possibleTabs.forEach(tab=>{
-      $(`#tab-button-${tab}`).prop('checked', activeTabIds.includes(tab))
+    hiddenTabs.forEach(tab=>{
+      $(`#tab-button-${tab}`).prop('checked', false)
     })
-
     let commentsWrapper = $("#comments-wrapper")
     commentsWrapper.empty()
     let displayed = []
-    if ( activeTabIds.includes("activity")){
-      displayed = _.union(displayed, activity)
+    if ( !hiddenTabs.includes("activity")){
+      displayed = window.lodash.union(displayed, activity)
     }
     comments.forEach(comment=>{
-      if (activeTabIds.includes(comment.comment_type)){
-        displayed.push(comment)
-      } else if ( !possibleTabs.includes(comment.comment_type)){
+      if (!hiddenTabs.includes(comment.comment_type)){
         displayed.push(comment)
       }
     })
-    displayed = _.orderBy(displayed, "date", "desc")
+    displayed = window.lodash.orderBy(displayed, "date", "desc")
     let array = []
 
     displayed.forEach(d=>{
@@ -303,7 +323,7 @@ function unescapeHtml(safe) {
       if (baptismDateRegex.test(d.object_note)) {
         d.object_note = d.object_note.replace(baptismDateRegex, baptismTimestamptoDate);
       }
-      let first = _.first(array)
+      let first = window.lodash.first(array)
       let name = d.comment_author || d.name
       let gravatar = d.gravatar || ""
       let obj = {
@@ -325,7 +345,7 @@ function unescapeHtml(safe) {
         commentsWrapper.append(commentTemplate({
           name: array[0].name,
           gravatar: array[0].gravatar,
-          date:window.SHAREDFUNCTIONS.formatDate(moment(array[0].date).unix()),
+          date:window.SHAREDFUNCTIONS.formatDate(moment(array[0].date).unix(), true),
           activity: array
         }))
         array = [obj]
@@ -335,7 +355,7 @@ function unescapeHtml(safe) {
       commentsWrapper.append(commentTemplate({
         gravatar: array[0].gravatar,
         name: array[0].name,
-        date:window.SHAREDFUNCTIONS.formatDate(moment(array[0].date).unix()),
+        date:window.SHAREDFUNCTIONS.formatDate(moment(array[0].date).unix(), true),
         activity: array
       }))
     }
@@ -399,6 +419,7 @@ function unescapeHtml(safe) {
         if (text.includes("http") && !url.includes("http")){
           [url, text] = [text, url]
         }
+        url = url.includes('http') ? url : `${window.wpApiShare.site_url}/${window.wpApiShare.post_type}/${url}`
         return `<a href="${url}">${text}</a>`
       })
 
@@ -411,7 +432,7 @@ function unescapeHtml(safe) {
   let getActivityPromise = null
   function get_all() {
     //abort previous promise if it is not finished.
-    if (getAllPromise && _.get(getAllPromise, "readyState") !== 4){
+    if (getAllPromise && window.lodash.get(getAllPromise, "readyState") !== 4){
       getActivityPromise.abort()
       getCommentsPromise.abort()
     }
@@ -427,7 +448,7 @@ function unescapeHtml(safe) {
       const activityData = activityDataStatusJQXHR[0].activity;
       prepareData(commentData, activityData)
     }).catch(err => {
-      if ( !_.get( err, "statusText" ) === "abort" ) {
+      if ( !window.lodash.get( err, "statusText" ) === "abort" ) {
         console.error(err);
         jQuery("#errors").append(err.responseText)
       }
@@ -440,9 +461,6 @@ function unescapeHtml(safe) {
     commentData.forEach(comment => {
       comment.date = moment(comment.comment_date_gmt + "Z")
 
-      if(comment.comment_content.match(/function|script/)) {
-        comment.comment_content = _.escape(comment.comment_content)
-      }
       /* comment_content should be HTML. However, we want to make sure that
        * HTML like "<div>Hello" gets transformed to "<div>Hello</div>", that
        * is, that all tags are closed, so that the comment_content can be
@@ -452,15 +470,15 @@ function unescapeHtml(safe) {
        * thanks to wp_new_comment . */
 
         // .DT lets strip out the tags provided from the submited comment and treat it as pure text.
-       comment.comment_content = $("<div>").html(comment.comment_content).text()
+       comment.comment_content = $("<div>").text(comment.comment_content).text()
 
       if (!typesCount[comment.comment_type]){
         typesCount[comment.comment_type] = 0;
       }
       typesCount[comment.comment_type]++;
     })
-    $('.tabs-title').addClass('hide')
-    _.forOwn(typesCount, (val, key)=>{
+    $('#comment-activity-tabs .tabs-title').addClass('hide')
+    window.lodash.forOwn(typesCount, (val, key)=>{
       let tab = $(`[data-id="${key}"].tab-button-label`)
       let text = tab.text()
       text = text.substring(0, text.indexOf('(')) || text
@@ -484,12 +502,12 @@ function unescapeHtml(safe) {
     saveTabs()
   })
   let saveTabs = ()=>{
-    let activeTabs = $('#comment-activity-tabs .tabs-section:checked')
-    let activeTabIds = [];
-    activeTabs.each((i, e)=>{
-      activeTabIds.push($(e).data("id"))
+    let hiddenTabs = $('#comment-activity-tabs .tabs-section:not(:checked)')
+    let hiddenTabIds = [];
+    hiddenTabs.each((i, e)=>{
+      hiddenTabIds.push($(e).data("id"))
     })
-    document.cookie = `contact_details_tabs=${JSON.stringify(activeTabIds)};path=/;expires=Fri, 31 Dec 9999 23:59:59 GMT"`
+    document.cookie = `dt_activity_comments_hidden_tabs=${JSON.stringify(hiddenTabIds)};path=/;expires=Fri, 31 Dec 9999 23:59:59 GMT"`
     display_activity_comment()
   }
 
@@ -499,7 +517,7 @@ function unescapeHtml(safe) {
   $('textarea.mention').mentionsInput({
     onDataRequest:function (mode, query, callback) {
       $('#comment-input').addClass('loading-gif')
-      if ( searchUsersPromise && _.get(searchUsersPromise, 'readyState') !== 4 ){
+      if ( searchUsersPromise && window.lodash.get(searchUsersPromise, 'readyState') !== 4 ){
         searchUsersPromise.abort("abortPromise")
       }
       searchUsersPromise = API.search_users(query)
@@ -540,8 +558,8 @@ function unescapeHtml(safe) {
     $("#confirm-revert").data("id", id)
     API.get_single_activity(postType, postId, id).then(a => {
       let field = a.meta_key
-      if (contactsDetailsWpApiSettings){
-        field = _.get(contactsDetailsWpApiSettings, `contacts_custom_fields_settings[${a.meta_key}].name`)
+      if (window.detailsSettings.post_settings){
+        field = window.lodash.get(window.detailsSettings, `post_settings.fields[${a.meta_key}].name`)
       }
 
       $(".revert-field").html(field || a.meta_key)

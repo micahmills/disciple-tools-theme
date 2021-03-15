@@ -1,3 +1,4 @@
+@import "settings";
 /**
     Option buttons
  */
@@ -48,6 +49,24 @@ html[dir='rtl'] {
         border-right: 0;
     }
 }
+.button.delete-button-style {
+    background: #eee;
+    border: 1px solid #cacaca;
+    border-left: 0;
+    border-radius: 0;
+    color: #cc4b37;
+    &:hover {
+        background-color: #cc4b37;
+        color: #fefefe;
+    }
+}
+html[dir='rtl'] {
+    .button.delete-button-style {
+        border: 1px solid #cacaca;
+        border-right: 0;
+        border-radius: 0;
+    }
+}
 /**
     Item details
  */
@@ -80,6 +99,10 @@ html[dir='rtl'] {
     justify-content: center;
     width: 100%;
     flex-wrap:wrap;
+    img {
+        width: 20px;
+        height: 20px;
+    }
 }
 .contact-quick-button {
     width: min-content;
@@ -94,6 +117,10 @@ html[dir='rtl'] {
 }
 .quick-action-menu a {
     vertical-align: middle;
+    img {
+        width: 20px;
+        height: 20px;
+    }
 }
 
 
@@ -140,115 +167,140 @@ DT comments and activity
         }
     }
 
-}
-
-#add-comment-button {
-    margin-bottom: 0;
-    height: 3rem;
-    //width: 40px;
-    //padding: 0 4px;
-}
-
-#add-comment-button-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-}
-
-.comment-bubble {
-    word-wrap: break-word;
-    padding-bottom: 2px;
-    .comment-text {
-        min-height: 1em;
+    #add-comment-button {
+        margin-bottom: 0;
+        height: 3rem;
+        //width: 40px;
+        //padding: 0 4px;
     }
-}
 
-.comment-controls {
-    a {
-        font-size: 12px;
+    #add-comment-button-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
     }
-    img {
-        height: 10px;
+
+    .comment-bubble {
+        word-wrap: break-word;
+        padding-bottom: 2px;
+        .comment-text {
+            min-height: 1em;
+        }
     }
-    object path {
-        fill: red;
+
+    .comment-controls {
+        a {
+            font-size: 12px;
+        }
+        img {
+            height: 10px;
+        }
+        object path {
+            fill: red;
+        }
     }
-}
 
-.comment-bubble, .comment-controls {
-    text-align: left;
-    padding: 0;
-    padding-left: 15px;
-    margin: 0;
-    margin-left: 2em;
-}
-
-html[dir='rtl'] .comment-bubble, html[dir='rtl'] .comment-controls {
-    text-align: right;
-    padding: 0;
-    padding-right: 15px;
-    margin: 0;
-    margin-right: 2em;
-}
-
-.comment-date {
-    text-align: right;
-    margin-right: 20px;
-    font-size:12px;
-}
-
-.translation-bubble {
-    border: 0;
-    border-left: 2px solid $dark-gray;
-    padding-left: 1em;
-}
-
-html[dir='rtl'] .translation-bubble {
-    border: 0;
-    border-right: 2px solid $dark-gray;
-    padding-right: 1em;
-}
-.translate-button {
-    font-size: .85em;
-}
-
-.activity-block {
-    margin-top: 15px;
-}
-
-.activity-bubble {
-    word-wrap: break-word;
-    color:gray;
-    font-style: italic;
-    border-inline-start: 3px solid gainsboro;
-    padding-inline-start: 15px;
-    margin: 0;
-    margin-inline-start: 2em;
-    padding-bottom: 2px;
-}
-
-
-.details-status-button {
-    font-size: 14px;
-    margin-left: 10px;
-    &.verify {
-        color: #4CAF50
+    .comment-bubble, .comment-controls {
+        text-align: left;
+        padding: 0;
+        padding-left: 15px;
+        margin: 0;
+        margin-left: 2em;
     }
-    &.invalid {
-        color: #F43636
-    }
-}
-.details-status {
-    margin-left: 10px;
-}
-.details-remove-button {
-    font-size: 14px;
-    margin-left: 10px;
-    color: #F43636;
-}
 
-.connections-edit {
-    display: none;
+    html[dir='rtl'] .comment-bubble, html[dir='rtl'] .comment-controls {
+        text-align: right;
+        padding: 0;
+        padding-right: 15px;
+        margin: 0;
+        margin-right: 2em;
+    }
+
+    .comment-date {
+        text-align: right;
+        margin-right: 20px;
+        font-size:12px;
+    }
+
+    .translation-bubble {
+        border: 0;
+        border-left: 2px solid $dark-gray;
+        padding-left: 1em;
+        margin: 0 0 0 2em;
+    }
+
+    .translate-button {
+        font-size: .85em;
+        padding: 0 0 0 15px;
+        margin: 0 0 0 2em;
+    }
+
+    html[dir='rtl'] {
+        .translation-bubble {
+            border: 0;
+            border-right: 2px solid $dark-gray;
+            padding-right: 1em;
+            margin: 0 2em 0 0;
+        }
+        .translate-button {
+            padding: 0 15px 0 0;
+            margin: 0 2em 0 0;
+        }
+    }
+
+    .activity-block {
+        margin-top: 15px;
+    }
+
+    .activity-bubble {
+        word-wrap: break-word;
+        color:gray;
+        font-style: italic;
+        border-inline-start: 3px solid gainsboro;
+        padding-inline-start: 15px;
+        margin: 0;
+        margin-inline-start: 2em;
+        padding-bottom: 2px;
+    }
+
+    .revert-activity {
+        float: right;
+    }
+    .revert-arrow-img {
+        height: 17px;
+        padding-top: 2px;
+
+        margin-right: 15px;
+    }
+
+
+    //add a loading spinner when searching for contacts
+    .mentions-input-box textarea.loading-gif {
+        background:url('../../../dt-assets/images/ajax-loader.gif') no-repeat 99% 6px;
+    }
+    //make sure the blue boxes around the @mentions in the textarea are the right sizes
+    .mentions-input-box .mentions strong span {
+        font-weight: 300;
+    }
+
+    #add-comment-section {
+        border: 1px solid #dcdcdc;
+        border-radius: 3px;
+        margin: 0 0 01.06667rem;
+        textarea,  select {
+            margin-bottom: 0;
+            border: none;
+        }
+        select {
+            -webkit-box-shadow: none;
+            box-shadow: none;
+        }
+        .section-subheader {
+            padding-top: .53333rem;
+            padding-left: .5rem;
+            padding-right: .15rem;
+        }
+    }
 }
 
 .display-fields {
@@ -260,76 +312,40 @@ html[dir='rtl'] .translation-bubble {
         height: 15px;
     }
 }
-.details-edit-fields {
-    input {
-        margin-bottom: 5px
+
+#details-tile {
+    .detail-snippet-row {
+        display: flex;
+        flex-wrap: wrap;
     }
-    .section-subheader {
-        margin-top: 10px
-    }
-    .delete-button{
-        margin-bottom: 0;
-    }
-    margin-left: 10px;
-    margin-right: 10px;
-}
-
-.show-more-button {
-    text-align: center;
-
-    button {
-        border: none;
-
-        &.showing-more {
-            .show-less {
-                display: inline;
-            }
-
-            .show-more {
-                display: none;
-            }
+    .detail-snippet {
+        display:none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-right: 15px;
+        margin-bottom: 5px;
+        img {
+            margin-right: 3px;
+            vertical-align: middle;
+            height: 15px;
+            width: 15px
+        }
+        .snippet-field-name {
+            font-size: small;
         }
     }
-
-    .show-less {
-        display: none;
+    @media screen and (max-width : #{map-get($breakpoints, medium)}) {
+        .detail-snippet {
+            max-width: 100%;
+        }
     }
 }
 
-ul.address {
-    textarea {
-        display: block;
+html[dir="rtl"] {
+    .input-group-field {
+        text-align: right;
     }
-
-    ul.dropdown.menu {
-        vertical-align: top;
-    }
-}
-
-.address.details-list .address-row {
-    .address-text {
-        white-space:pre-wrap;
-    }
-    img {
-        display: inline-block;
-        vertical-align: top;
-        margin-top:5px;
-    }
-    div {
-        display: inline-block;
-    }
-}
-
-.new-social-media {
-    display: flex;
-    .button {
-        margin-left:5px;
-    }
-}
-
-ul.social li {
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 
@@ -389,16 +405,6 @@ Groups
 }
 
 
-.revert-activity {
-    float: right;
-}
-.revert-arrow-img {
-    height: 17px;
-    padding-top: 2px;
-
-    margin-right: 15px;
-}
-
 
 .detail-notification-box {
     border: none;
@@ -435,40 +441,14 @@ select.color-select {
     }
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' width='32' height='24' viewBox='0 0 32 24'><polygon points='0,0 32,0 16,24' style='fill: white'></polygon></svg>");
     border:none;
+    text-shadow: rgba(0, 0, 0, 0.45) 0 0 6px;
 }
 
-//add a loading spinner when searching for contacts
-.mentions-input-box textarea.loading-gif {
-    background:url('../../../dt-assets/images/ajax-loader.gif') no-repeat 99% 6px;
-}
-//make sure the blue boxes around the @mentions in the textarea are the right sizes
-.mentions-input-box .mentions strong span {
-    font-weight: 300;
-}
-
-#add-comment-section {
-    border: 1px solid #dcdcdc;
-    border-radius: 3px;
-    margin: 0 0 01.06667rem;
-    textarea,  select {
-        margin-bottom: 0;
-        border: none;
-    }
-    select {
-        -webkit-box-shadow: none;
-        box-shadow: none;
-    }
-    .section-subheader {
-        padding-top: .53333rem;
-        padding-left: .5rem;
-        padding-right: .15rem;
-    }
-}
 
 
 .bordered-box{
     .section-header {
-        display: flex; justify-content: space-between
+        display: flex;
     }
     .section-chevron {
         margin-left:auto;
@@ -503,6 +483,7 @@ select.color-select {
 .assigned-to-row {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     .status-square {
         height: 13px;
         width: 13px;

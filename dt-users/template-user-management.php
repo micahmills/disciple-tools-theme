@@ -1,12 +1,14 @@
 <?php
 /*
-Template Name: User Management
+ * Name: User Management
 */
 if ( !current_user_can( 'list_users' ) && !current_user_can( 'manage_dt' ) ) {
     wp_safe_redirect( '/settings' );
+    exit();
 }
 $dt_url_path = dt_get_url_path();
 $user_management_options = DT_User_Management::user_management_options();
+
 ?>
 
 <?php get_header(); ?>
@@ -45,8 +47,13 @@ $user_management_options = DT_User_Management::user_management_options();
                 <div class="bordered-box">
                     <div id="chart">
 
-                    <?php if ( strpos( $dt_url_path, 'user-management/users' ) !== false ) :
-                        $users = DT_User_Management::get_users(); ?>
+                    <?php if ( strpos( $dt_url_path, 'user-management/user' ) !== false ) :
+                        $refresh = true; // @todo refresh enabled all the time. evaluate if caching needed on the user list
+                        if ( isset( $_GET['refresh'] ) ) {
+                            $refresh = true;
+                        }
+
+                        $users = DT_User_Management::get_users( $refresh ); ?>
                     <div id="user-chart" class="user-list-wrapper">
 
                         <!-- Title Section-->
@@ -117,6 +124,7 @@ $user_management_options = DT_User_Management::user_management_options();
                             </tbody>
                         </table>
                     </div>
+                    <div class="center" style="margin-top:1em;"><a href="?refresh=true">refresh list data</a></div>
                     <?php endif; ?>
                     </div><!-- Container for charts -->
                 </div>
@@ -131,7 +139,6 @@ $user_management_options = DT_User_Management::user_management_options();
                     <div id="user-name-wrapper">
                         <h3 id="user_name"><?php esc_html_e( "Multiplier Name", 'disciple_tools' ) ?></h3>
                     </div>
-
 
                     <button class="close-button" data-close aria-label="Close reveal" type="button">
                         <span aria-hidden="true">&times;</span>
@@ -223,8 +230,12 @@ $user_management_options = DT_User_Management::user_management_options();
                             <!-- Contacts -->
                             <div class="bordered-box">
                                 <h4><?php esc_html_e( 'Contacts', 'disciple_tools' ); ?></h4>
-                                <div id="status_chart_div"></div>
+                                <div style="width:100%; height:400px; position:relative">
+                                    <div id="status_chart_div" style="position:absolute; width: 100%; height:400px;  right: -30px; left: -30px;"></div>
+                                </div>
                             </div>
+
+                            <div id="user-id-reveal" style="color:darkgrey;margin:0 auto;text-align:center;"></div>
 
                         </div><!-- end left -->
 
@@ -258,10 +269,10 @@ $user_management_options = DT_User_Management::user_management_options();
                             <!-- Locations -->
                             <div class="bordered-box">
                                 <?php if ( DT_Mapbox_API::get_key() ) : /* If Mapbox is enabled. */?>
-                                    <h4><?php esc_html_e( "Location Responsibility", 'zume' ) ?><a class="button clear float-right" id="new-mapbox-search"><?php esc_html_e( "add", 'zume' ) ?></a></h4>
+                                    <h4><?php esc_html_e( "Location Responsibility", 'disciple_tools' ) ?><a class="button clear float-right" id="new-mapbox-search"><?php esc_html_e( "add", 'disciple_tools' ) ?></a></h4>
                                     <div id="mapbox-wrapper"></div>
                                 <?php else : ?>
-                                    <h4><?php esc_html_e( "Location Responsibility", 'zume' ) ?></h4>
+                                    <h4><?php esc_html_e( "Location Responsibility", 'disciple_tools' ) ?></h4>
                                     <div class="location_grid">
                                         <var id="location_grid-result-container" class="result-container"></var>
                                         <div id="location_grid_t" name="form-location_grid" class="scrollable-typeahead typeahead-margin-when-active">
@@ -317,9 +328,10 @@ $user_management_options = DT_User_Management::user_management_options();
                                     $user_roles = [];
 
                                     $dt_roles = dt_multi_role_get_editable_role_names();
+                                    $expected_roles = apply_filters( 'dt_set_roles_and_permissions', [] );
                                     ?>
 
-                                    <p> <a href="https://disciple-tools.readthedocs.io/en/latest/Disciple_Tools_Theme/getting_started/roles.html" target="_blank"><?php esc_html_e( 'Click here to see roles documentation', 'disciple_tools' ); ?></a>  </p>
+                                    <p> <a href="https://disciple.tools/user-docs/getting-started-info/roles/" target="_blank"><?php esc_html_e( 'Click here to see roles documentation', 'disciple_tools' ); ?></a>  </p>
 
                                     <ul id="user_roles_list" class="no-bullet">
                                         <?php foreach ( $dt_roles as $role_key => $name ) : ?>
@@ -329,12 +341,69 @@ $user_management_options = DT_User_Management::user_management_options();
                                                            value="<?php echo esc_attr( $role_key ); ?>"
                                                         <?php checked( in_array( $role_key, $user_roles ) ); ?>
                                                         <?php disabled( $role_key === 'administrator' ); ?> />
-                                                    <?php echo esc_html( $name ); ?>
+                                                    <strong>
+                                                    <?php
+                                                    if ( isset( $expected_roles[$role_key]["label"] ) && !empty( $expected_roles[$role_key]["label"] ) ){
+                                                        echo esc_html( $expected_roles[$role_key]["label"] );
+                                                    } else {
+                                                        echo esc_html( $name );
+                                                    }
+                                                    ?>
+                                                    </strong>
+                                                    <?php
+                                                    if ( isset( $expected_roles[$role_key]["description"] ) ){
+                                                        echo ' - ' . esc_html( $expected_roles[$role_key]["description"] );
+                                                    }
+                                                    ?>
                                                 </label>
                                             </li>
                                         <?php endforeach; ?>
                                     </ul>
                                     <button class="button loader" id="save_roles"><?php esc_html_e( 'Save Roles', 'disciple_tools' ); ?></button>
+
+<!--                                    <div style="display: none">-->
+                                    <div id="allowed_sources_options" style="display: none">
+                                        <?php
+                                        $post_settings = DT_Posts::get_post_settings( "contacts" );
+                                        $sources = isset( $post_settings["fields"]["sources"]["default"] ) ? $post_settings["fields"]["sources"]["default"] : [];
+                                        ?>
+                                        <h3><?php esc_html_e( 'Access by Source', 'disciple_tools' ); ?></h3>
+
+                                        <ul id="source_access_type" class="no-bullet">
+                                            <li>
+                                                <label>
+                                                    <input type="radio" name="allowed_sources[]" value="all"/>
+                                                    <?php esc_html_e( 'All Sources - gives access to all contacts', 'disciple_tools' ); ?>
+                                                </label>
+                                            </li>
+                                            <li>
+                                                <label>
+                                                    <input type="radio" name="allowed_sources[]" value="custom_source_restrict"/>
+                                                    <?php esc_html_e( 'Custom - Access own contacts and all the contacts of the selected sources below', 'disciple_tools' ); ?>
+                                                </label>
+                                            </li>
+                                            <li>
+                                                <label>
+                                                    <input type="radio" name="allowed_sources[]" value="restrict_all_sources"/>
+                                                    <?php esc_html_e( 'No Sources - only own contacts', 'disciple_tools' ); ?>
+                                                </label>
+                                            </li>
+                                        </ul>
+
+                                        <strong style="margin-top:30px">
+                                            <?php esc_html_e( "Sources List", 'disciple_tools' ) ?>
+                                        </strong>
+                                        <ul id="allowed_sources" class="ul-no-bullets">
+                                            <?php foreach ( $sources as $source_key => $source_value ) : ?>
+                                                <li>
+                                                    <input type="checkbox" name="allowed_sources[]" value="<?php echo esc_html( $source_key ) ?>"/>
+                                                    <?php echo esc_html( $source_value["label"] ) ?>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                        <button class="button loader" id="save_allowed_sources"><?php esc_html_e( 'Save Allowed Sources', 'disciple_tools' ); ?></button>
+
+                                    </div>
                                 </div>
                             <?php endif; ?>
 
@@ -370,4 +439,3 @@ $user_management_options = DT_User_Management::user_management_options();
 </div> <!-- end #content -->
 
 <?php get_footer(); ?>
-

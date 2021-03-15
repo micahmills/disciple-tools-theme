@@ -6,7 +6,7 @@
         <h3 class="section-header">
             <span>
                 <?php esc_html_e( "Comments and Activity", 'disciple_tools' ) ?>
-                <span id="comments-activity-spinner" style="display: inline-block" class="loading-spinner"></span>
+                <span id="comments-activity-spinner" class="loading-spinner"></span>
             </span>
             <button class="help-button" data-section="comments-activity-help-text">
                 <img class="help-icon"
@@ -42,10 +42,14 @@
                             </div>
                             <select id="comment_type_selector" class="cell auto">
                                 <?php
-                                foreach ( $sections as $section ) {?>
-                                    <option value="<?php echo esc_html( $section["key"] ); ?>">
-                                    <?php echo esc_html( $section["label"] ); ?>
-                                <?php } ?>
+                                $section_keys = [];
+                                foreach ( $sections as $section ) {
+                                    if ( !in_array( $section["key"], $section_keys ) ) {
+                                        $section_keys[] = $section["key"] ?>
+                                        <option value="<?php echo esc_html( $section["key"] ); ?>">
+                                        <?php echo esc_html( $section["label"] );
+                                    }
+                                } ?>
                             </select>
                         </div>
                 <?php endif; ?>
@@ -53,46 +57,7 @@
         </div>
         <div class="cell grid-x" style="margin-bottom: 20px">
             <div class="cell auto">
-                <?php if ( is_singular( "contacts" ) ) :
-                    $contact = Disciple_Tools_Contacts::get_contact( get_the_ID(), true, true );
-                    $contact_fields = Disciple_Tools_Contacts::get_contact_fields();
-                    ?>
-
-                    <ul class="dropdown menu" data-dropdown-menu style="display: inline-block">
-                        <li style="border-radius: 5px">
-                            <a class="button menu-white-dropdown-arrow"
-                               style="background-color: #00897B; color: white;">
-                                <?php esc_html_e( "Quick actions", 'disciple_tools' ) ?></a>
-                            <ul class="menu" style="width: max-content">
-                                <?php
-                                foreach ( $contact_fields as $field => $val ) {
-                                    if ( strpos( $field, "quick_button" ) === 0 ) {
-                                        $current_value = 0;
-                                        if ( isset( $contact[$field] ) ) {
-                                            $current_value = $contact[$field];
-                                        } ?>
-                                        <li class="quick-action-menu" data-id="<?php echo esc_attr( $field ) ?>">
-                                            <a>
-                                                <img src="<?php echo esc_url( get_template_directory_uri() . "/dt-assets/images/" . $val['icon'] ); ?>">
-                                                <?php echo esc_html( $val["name"] ); ?>
-                                                (<span class="<?php echo esc_attr( $field ) ?>"><?php echo esc_html( $current_value ); ?></span>)
-                                            </a>
-                                        </li>
-
-                                        <?php
-                                    }
-                                }
-                                ?>
-                            </ul>
-                        </li>
-                    </ul>
-                    <button class="help-button" data-section="quick-action-help-text">
-                        <img class="help-icon"
-                             src="<?php echo esc_html( get_template_directory_uri() . '/dt-assets/images/help.svg' ) ?>"/>
-                    </button>
-                <?php endif; ?>
-
-
+                <?php do_action( 'dt_comment_action_quick_action', get_post_type() ); ?>
             </div>
 
             <div class="shrink cell" id="add-comment-button-container">
@@ -123,8 +88,11 @@
                     ];
                     $post_type = get_post_type();
                     $sections = apply_filters( 'dt_comments_additional_sections', $sections, $post_type );
+                    $section_keys = [];
                     foreach ( $sections as $section ) :
-                        if ( isset( $section["key"] ) && isset( $section["label"] ) ) : ?>
+                        if ( isset( $section["key"] ) && isset( $section["label"] ) && !in_array( $section["key"], $section_keys )) :
+                            $section_keys[] = $section["key"];
+                            ?>
                             <li class="tabs-title hide">
                                 <label for="tab-button-<?php echo esc_html( $section["key"] ) ?>">
                                     <input type="checkbox"
@@ -132,7 +100,7 @@
                                            id="tab-button-<?php echo esc_html( $section["key"] ) ?>"
                                            data-id="<?php echo esc_html( $section["key"] ) ?>"
                                            class="tabs-section"
-                                        <?php echo esc_html( ( isset( $section["selected_by_default"] ) && $section["selected_by_default"] === true ) ? 'checked' : '' ) ?>
+                                           checked
                                     >
                                     <span class="tab-button-label" dir="auto"
                                           data-id="<?php echo esc_html( $section["key"] ) ?>"> <?php echo esc_html( $section["label"] ) ?></span>
@@ -180,9 +148,9 @@
 
     <div class="reveal" id="edit-comment-modal" data-reveal>
         <p class="lead"><?php esc_html_e( 'Edit Comment:', 'disciple_tools' ) ?></p>
-        <textarea id="comment-to-edit" rows="10" dir="auto"></textarea>
+        <textarea id="comment-to-edit" rows="5" dir="auto"></textarea>
         <div class="grid-x">
-        <div class="cell small-12" id="edit_typeOfComment">
+            <div class="cell small-12" id="edit_typeOfComment">
                 <?php if ( is_singular( "contacts" ) ) :
                      $sections = [
                          [
@@ -193,18 +161,20 @@
                      ];
                      $post_type = get_post_type();
                      $sections = apply_filters( 'dt_comments_additional_sections', $sections, $post_type );?>
-
-
-                            <div class="section-subheader">
-                                <?php esc_html_e( "Type of Comment", 'disciple_tools' ) ?>
-                            </div>
-                            <select id="edit_comment_type_selector" class="">
-                                <?php
-                                foreach ( $sections as $section ) {?>
+                        <div class="section-subheader">
+                            <?php esc_html_e( "Type of Comment", 'disciple_tools' ) ?>
+                        </div>
+                        <select id="edit_comment_type_selector" class="">
+                            <?php
+                            $section_keys = [];
+                            foreach ( $sections as $section ) {
+                                if ( !in_array( $section["key"], $section_keys ) ) {
+                                    $section_keys[] = $section["key"] ?>
                                     <option value="<?php echo esc_html( $section["key"] ); ?>">
-                                    <?php echo esc_html( $section["label"] ); ?>
-                                <?php } ?>
-                            </select>
+                                    <?php echo esc_html( $section["label"] );
+                                }
+                            } ?>
+                        </select>
                 <?php endif; ?>
             </div>
             <button class="button button-cancel clear" data-close aria-label="Close reveal" type="button">

@@ -65,7 +65,7 @@ if ( ! class_exists( 'DT_Mapping_Module' ) ) {
              */
             $this->permissions = apply_filters( 'dt_mapping_module_has_permissions', false );
             if ( ! $this->permissions ) {
-                if ( current_user_can( 'view_any_contacts' )
+                if ( current_user_can( 'dt_all_access_contacts' )
                     || current_user_can( 'view_project_metrics' )
                     || current_user_can( 'view_mapping' ) ) {
                     $this->permissions = true;
@@ -159,13 +159,13 @@ if ( ! class_exists( 'DT_Mapping_Module' ) ) {
             // Amcharts
             wp_register_script( 'amcharts-core', 'https://www.amcharts.com/lib/4/core.js', false, 4, true );
             wp_register_script( 'amcharts-charts', 'https://www.amcharts.com/lib/4/charts.js', false, 4, true );
-            wp_register_script( 'amcharts-animated', 'https://www.amcharts.com/lib/4/themes/animated.js', 4, false, true );
+            wp_register_script( 'amcharts-animated', 'https://www.amcharts.com/lib/4/themes/animated.js', [], 4, true );
             wp_register_script( 'amcharts-maps', 'https://www.amcharts.com/lib/4/maps.js', false, 4, true );
 
             $this->drilldown_script();
 
             // mapping css
-            wp_register_style( 'mapping-css', $dt_mapping["mapping_css_url"] );
+            wp_register_style( 'mapping-css', $dt_mapping["mapping_css_url"], [], $dt_mapping["mapping_css_version"] );
             wp_enqueue_style( 'mapping-css' );
 
             // Mapping Script
@@ -1232,15 +1232,15 @@ if ( ! class_exists( 'DT_Mapping_Module' ) ) {
             }
 
             // Skip for menu items.
-            if ( 'nav_menu_item' === get_post_type( $post->ID ) ) {
+            $post_type = get_post_type( $post->ID );
+            if ( ! in_array( $post_type, [ 'contacts', 'groups', 'trainings' ] ) ) {
                 return;
             }
 
             if ( ! class_exists( 'Location_Grid_Geocoder' ) ) {
                 require_once( 'geocode-api/location-grid-geocoder.php' );
             }
-            $geocoder = new Location_Grid_Geocoder();
-            $geocoder->delete_location_grid_meta( $post_id, 'all', 0 );
+            Location_Grid_Meta::delete_location_grid_meta( $post_id, 'all', 0 );
         }
     }
     DT_Mapping_Module::instance(); // end DT_Mapping_Module class

@@ -289,6 +289,7 @@ function dt_build_user_fields_display( array $usermeta ): array
 {
     $fields = [];
 
+    $default_user_fields = dt_get_site_custom_lists()["user_fields"];
     $site_custom_lists = dt_get_option( 'dt_site_custom_lists' );
     if ( ! $site_custom_lists ) {
         return [];
@@ -298,6 +299,9 @@ function dt_build_user_fields_display( array $usermeta ): array
     foreach ( $site_user_fields as $key => $value ) {
         if ( $value['enabled'] ) { // if the site field is enabled
             $i = 0;
+            if ( isset( $default_user_fields[$key]["label"] ) ){
+                $value["label"] = $default_user_fields[$key]["label"];
+            }
 
             foreach ( $usermeta as $k => $v ) {
                 if ( $key == $k ) {
@@ -313,49 +317,6 @@ function dt_build_user_fields_display( array $usermeta ): array
     }
 
     return $fields;
-}
-
-/**
- * Expects the contact id, but can be given the user id and look up the contact id.
- *
- * @param int  $id
- * @param bool $is_user_id
- *
- * @return array|bool|null|object
- */
-function dt_get_user_locations_list( int $id, $is_user_id = false ) {
-    global $wpdb;
-
-    if ( $is_user_id ) {
-        $id = $wpdb->get_var( $wpdb->prepare( "
-          SELECT post_id 
-          FROM $wpdb->postmeta 
-          WHERE meta_key = 'corresponds_to_user' 
-          AND meta_value = %d",
-        $id ) );
-    }
-    if ( empty( $id ) ) {
-        return false;
-    }
-
-    $locations = $wpdb->get_results(
-        $wpdb->prepare(
-            "SELECT
-                      a.p2p_to as location_id,
-                      b.post_title
-                    FROM  $wpdb->p2p as a
-                      JOIN $wpdb->posts as b
-                      ON a.p2p_to=b.ID
-                    WHERE a.p2p_from = %d
-                    AND a.p2p_type = 'contacts_to_locations'",
-        $id ), ARRAY_A
-    );
-    // check if null return
-    if ( empty( $locations ) ) {
-        return false;
-    } else {
-        return $locations;
-    }
 }
 
 /**

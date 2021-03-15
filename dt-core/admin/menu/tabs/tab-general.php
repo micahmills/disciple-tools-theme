@@ -50,35 +50,45 @@ class Disciple_Tools_General_Tab extends Disciple_Tools_Abstract_Menu_Base
     public function content( $tab ) {
         if ( 'general' == $tab ) :
 
-            $this->template( 'begin' );
+            $modules = dt_get_option( "dt_post_type_modules" );
+            $this->template( 'begin', 2 );
 
-        /* Base User */
+            /* Base User */
             $this->box( 'top', 'Base User' );
             $this->process_base_user();
             $this->base_user();
             $this->box( 'bottom' );
             /* End Base User */
 
-        /* Email Settings */
+            /* Email Settings */
             $this->box( 'top', 'Email Settings' );
             $this->process_email_settings();
             $this->email_settings();
             $this->box( 'bottom' );
             /* End Email Settings */
 
-        /* Site Notifications */
+            /* Modules */
+            $this->box( 'top', 'Modules' );
+            $this->process_contact_modules();
+            $this->display_contact_modules();
+            $this->box( 'bottom' );
+            /* Modules */
+
+            /* Site Notifications */
             $this->box( 'top', 'Site Notifications' );
             $this->process_user_notifications();
             $this->user_notifications(); // prints content for the notifications box
             $this->box( 'bottom' );
             /* Site Notifications */
 
-        /* Update Required */
-            $this->box( 'top', 'Update Needed Triggers' );
-            $this->process_update_required();
-            $this->update_required_options();
-            $this->box( 'bottom' );
-            /* Site Notifications */
+            /* Update Required */
+            if ( isset( $modules["access_module"]["enabled"] ) && $modules["access_module"]["enabled"] ){
+                $this->box( 'top', 'Update Needed Triggers' );
+                $this->process_update_required();
+                $this->update_required_options();
+                $this->box( 'bottom' );
+            }
+            /* Update Required */
 
             /* Update Required */
             $this->box( 'top', 'Group Tile Preferences' );
@@ -86,6 +96,14 @@ class Disciple_Tools_General_Tab extends Disciple_Tools_Abstract_Menu_Base
             $this->update_group_preferences();
             $this->box( 'bottom' );
             /* Site Notifications */
+
+            /* User Visibility */
+            $this->box( 'top', 'User Visibility Preferences' );
+            $this->process_user_visibility();
+            $this->update_user_visibility();
+            $this->box( 'bottom' );
+            /* User Visibility */
+
 
             $this->template( 'right_column' );
 
@@ -154,64 +172,6 @@ class Disciple_Tools_General_Tab extends Disciple_Tools_Abstract_Menu_Base
 
             update_option( 'dt_site_options', $site_options, true );
         }
-    }
-
-
-
-    /**
-     * Print extension module box for options page // @todo in progress
-     */
-    public function metrics() {
-
-//        $site_options = dt_get_option( 'dt_site_options' ); // @todo create new default section for dt_get_option()
-        $roles = dt_multi_role_get_roles();
-        if ( isset( $roles['administrator'] ) ) {
-            unset( $roles['administrator'] );
-        }
-//        dt_write_log( $roles );
-
-        if ( isset( $_POST['metrics_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['metrics_nonce'] ) ), 'metrics' . get_current_user_id() ) ) {
-
-            dt_write_log( $_POST ); // @todo add saving logic
-
-        }
-
-
-        ?>
-        <form method="post" name="extension_modules_form">
-
-            <button type="submit" class="button-like-link" name="reset_extension_modules" value="1"><?php echo esc_html__( 'reset' ) ?></button>
-
-            <p><?php esc_html_e( 'Configure which groups see metrics', 'disciple_tools' ) ?></p>
-
-            <input type="hidden" name="extension_modules_nonce" id="extension_modules_nonce" value="<?php echo esc_attr( wp_create_nonce( 'metrics' . get_current_user_id() ) ) ?>" />
-
-            <table class="widefat">
-                <thead>
-                    <tr>
-                        <th><?php echo esc_html( 'Role' ) ?></th>
-                        <th><?php echo esc_html( 'Hide Personal' ) ?></th>
-                        <th><?php echo esc_html( 'Hide Project Basic' ) ?></th>
-                        <th><?php echo esc_html( 'Hide Project Advanced' ) ?></th>
-                        <th><?php echo esc_html( 'Hide Extensions' ) ?></th>
-                    </tr>
-                </thead>
-
-                <?php foreach ( $roles as $role ) : ?>
-                <tr>
-                    <td><?php echo esc_html( $role->name ) ?></td>
-                    <td><input name="<?php echo esc_attr( $role->slug ) ?>-personal" type="checkbox" <?php echo ( false ? "checked" : "" ) ?> /></td>
-                    <td><input name="<?php echo esc_attr( $role->slug ) ?>-project-basic" type="checkbox" <?php echo ( false ? "checked" : "" ) ?> /></td>
-                    <td><input name="<?php echo esc_attr( $role->slug ) ?>-project-advanced" type="checkbox" <?php echo ( false ? "checked" : "" ) ?> /></td>
-                    <td><input name="<?php echo esc_attr( $role->slug ) ?>-extensions" type="checkbox" <?php echo ( false ? "checked" : "" ) ?> /></td>
-                </tr>
-                <?php endforeach; ?>
-            </table>
-
-            <br>
-            <span style="float:right;"><button type="submit" class="button float-right">Save</button></span>
-        </form>
-        <?php
     }
 
 
@@ -328,13 +288,12 @@ class Disciple_Tools_General_Tab extends Disciple_Tools_Abstract_Menu_Base
             }
             update_option( 'dt_site_options', $site_options, true );
         }
-
     }
 
     public function update_required_options(){
         $site_options = dt_get_option( 'dt_site_options' );
         $update_required_options = $site_options['update_required']["options"];
-        $field_options = Disciple_Tools_Contact_Post_Type::instance()->get_custom_fields_settings( false )
+        $field_options = DT_Posts::get_post_field_settings( "contacts" );
         ?>
         <h3><?php esc_html_e( "Contacts", 'disciple_tools' ) ?></h3>
         <form method="post" name="update_required-form">
@@ -358,8 +317,8 @@ class Disciple_Tools_General_Tab extends Disciple_Tools_Abstract_Menu_Base
                 </thead>
                 <?php foreach ( $update_required_options as $option_key => $option ) : ?>
                     <tr>
-                        <td><?php echo esc_html( $field_options["overall_status"]['default'][$option['status']]["label"] ) ?></td>
-                        <td><?php echo esc_html( $field_options["seeker_path"]['default'][$option['seeker_path']]["label"] ) ?></td>
+                        <td><?php echo esc_html( $field_options["overall_status"]['default'][$option['status']]["label"] ?? '' ) ?></td>
+                        <td><?php echo esc_html( $field_options["seeker_path"]['default'][$option['seeker_path']]["label"] ?? '_missing_' ) ?></td>
                         <td>
                             <input name="<?php echo esc_html( $option_key ) ?>_days" type="number"
                                 value="<?php echo esc_html( $option["days"] ) ?>"  />
@@ -378,7 +337,7 @@ class Disciple_Tools_General_Tab extends Disciple_Tools_Abstract_Menu_Base
 
         <?php
         $update_required_options = $site_options['group_update_required']["options"];
-        $field_options = Disciple_Tools_Groups_Post_Type::instance()->get_custom_fields_settings( false )
+        $field_options = DT_Posts::get_post_field_settings( "groups" );
         ?>
         <h3><?php esc_html_e( "Groups", 'disciple_tools' ) ?></h3>
         <form method="post" name="group_update_required-form" style="margin-top: 50px">
@@ -463,6 +422,119 @@ class Disciple_Tools_General_Tab extends Disciple_Tools_Abstract_Menu_Base
             <span style="float:right;"><button type="submit" class="button float-right"><?php esc_html_e( "Save", 'disciple_tools' ) ?></button> </span>
         </form>
         <?php
+    }
+
+    /** User Visibility Preferences */
+    public function process_user_visibility(){
+        if ( isset( $_POST['user_visibility_nonce'] ) &&
+             wp_verify_nonce( sanitize_key( wp_unslash( $_POST['user_visibility_nonce'] ) ), 'user_visibility' . get_current_user_id() ) ) {
+
+            $dt_roles = dt_multi_role_get_editable_role_names();
+            foreach ( $dt_roles as $role_key => $name ) :
+                $role_object = get_role( $role_key );
+                if ( isset( $_POST[$role_key] ) && !array_key_exists( 'dt_list_users', $role_object->capabilities ) ) {
+                    $role_object->add_cap( 'dt_list_users' );
+                } else if ( !isset( $_POST[$role_key] ) && array_key_exists( 'dt_list_users', $role_object->capabilities ) ) {
+                    $role_object->remove_cap( 'dt_list_users' );
+                }
+            endforeach;
+        }
+
+    }
+
+    public function update_user_visibility(){
+        $dt_roles = dt_multi_role_get_editable_role_names();
+        ?>
+        <p><?php esc_html_e( "User Roles that can view all other Disciple Tools users names" ) ?></p>
+        <form method="post" >
+            <table class="widefat">
+            <?php foreach ( $dt_roles as $role_key => $name ) : ?>
+                <?php
+                $role_object = get_role( $role_key );
+                ?>
+                <?php if ( $role_object && !array_key_exists( 'dt_all_access_contacts', $role_object->capabilities ) ) : ?>
+                <tr>
+                    <td>
+                        <input type="checkbox" name="<?php echo esc_attr( $role_key ); ?>" <?php checked( array_key_exists( 'dt_list_users', $role_object->capabilities ) ); ?>/> <?php echo esc_attr( $name ); ?>
+                    </td>
+                </tr>
+                <?php endif; ?>
+            <?php endforeach; ?>
+
+                <?php wp_nonce_field( 'user_visibility' . get_current_user_id(), 'user_visibility_nonce' )?>
+            </table>
+            <br>
+            <span style="float:right;"><button type="submit" class="button float-right"><?php esc_html_e( "Save", 'disciple_tools' ) ?></button> </span>
+        </form>
+        <?php
+    }
+
+    private function display_contact_modules(){
+        $modules = dt_get_option( 'dt_post_type_modules' )
+
+        ?>
+        <form method="post" >
+            <?php wp_nonce_field( 'contact_modules', 'contact_modules_nonce' )?>
+            <table class="widefat">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Enabled</th>
+                        <th>Requires</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ( $modules as $module_key => $module_values ) : ?>
+                    <tr>
+                        <td><?php echo esc_html( $module_values['name'] ); ?></td>
+                        <td>
+                            <input type="checkbox"
+                                   name="<?php echo esc_html( $module_key ); ?>"
+                                   <?php disabled( $module_values['locked'] ?? false ) ?>
+                                   <?php checked( $module_values['enabled'] ) ?> />
+                        </td>
+                        <td>
+                            <?php echo esc_html( join( ", ", array_map( function ( $req_key ) use ( $modules ){
+                                return $modules[$req_key]["name"];
+                            }, ( $module_values["prerequisites"] ?? [] ) ) ) );
+                            ?>
+                        </td>
+                        <td>
+                            <?php echo esc_html( $module_values["description"] ?? "" ); ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+            <br>
+            <span style="float:right;"><button type="submit" class="button float-right"><?php esc_html_e( "Save", 'disciple_tools' ) ?></button> </span>
+        </form>
+        <?php
+    }
+
+    private function process_contact_modules(){
+        if ( isset( $_POST['contact_modules_nonce'] ) &&
+             wp_verify_nonce( sanitize_key( wp_unslash( $_POST['contact_modules_nonce'] ) ), 'contact_modules' ) ) {
+
+            $module_settings = dt_get_option( "dt_post_type_modules" );
+            $module_option = get_option( "dt_post_type_modules", [] );
+            foreach ( $module_settings as $module_key => $module_values ){
+                if ( !isset( $module_option[$module_key] ) ){
+                    $module_option[$module_key] = [ "enabled" => false ];
+                }
+                $module_option[$module_key]["enabled"] = isset( $_POST[$module_key] ) || ( $module_settings[$module_key]["locked"] ?? false );
+                if ( isset( $_POST[$module_key] ) ){
+                    foreach ( $module_settings[$module_key]["prerequisites"] ?? [] as $prereq ){
+                        if ( !isset( $_POST[$prereq] ) && !( $module_settings[$prereq]["locked"] ?? false ) ){
+                            $module_option[$module_key]["enabled"] = false;
+                        }
+                    }
+                }
+            }
+            update_option( "dt_post_type_modules", $module_option );
+
+        }
     }
 
 }

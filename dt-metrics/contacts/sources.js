@@ -2,17 +2,16 @@ jQuery(document).ready(function() {
 
   jQuery('#metrics-sidemenu').foundation('down', jQuery('#contacts-menu'));
 
-
   function show_sources_overview() {
 
     let chartDiv = jQuery('#chart')
 
     chartDiv.empty().html(`
-      <span class="section-header">${_.escape(window.wp_js_object.translations.sources)}</span>
-      <div class="section-subheader">${_.escape(window.wp_js_object.translations.filter_contacts_to_date_range)}</div>
+      <span class="section-header">${window.lodash.escape(window.wp_js_object.translations.sources)}</span>
+      <div class="section-subheader">${window.lodash.escape(window.wp_js_object.translations.filter_contacts_to_date_range)}</div>
       <div class="date_range_picker">
           <i class="fi-calendar"></i>&nbsp;
-          <span>${_.escape(window.wp_js_object.translations.all_time)}</span> 
+          <span>${window.lodash.escape(window.wp_js_object.translations.all_time)}</span>
           <i class="dt_caret down"></i>
       </div>
       <div style="display: inline-block" class="loading-spinner"></div>
@@ -44,37 +43,37 @@ jQuery(document).ready(function() {
 
       chartDiv.find(".js-loading").remove()
 
-      let filteringOutText = `${_.escape(window.wp_js_object.translations.milestones)} ${label}.`;
+      let filteringOutText = `${window.lodash.escape(window.wp_js_object.translations.milestones)} ${label}.`;
 
       chartsDiv.append($("<div>").html(`
 
-        <h3>${_.escape(window.wp_js_object.translations.sources_all_contacts_by_source_and_status)}</h3>
-  
-        <p>${filteringOutText} ${_.escape(window.wp_js_object.translations.sources_contacts_warning)}</p>
-  
+        <h3>${window.lodash.escape(window.wp_js_object.translations.sources_all_contacts_by_source_and_status)}</h3>
+
+        <p>${filteringOutText} ${window.lodash.escape(window.wp_js_object.translations.sources_contacts_warning)}</p>
+
         <div id="chartdiv1" style="min-height: ${height}"></div>
-  
+
         <hr>
-  
-        <h3>${_.escape(window.wp_js_object.translations.sources_active_by_seeker_path)}</h3>
-  
-        <p>${_.escape(window.wp_js_object.translations.sources_only_active)} 
-        ${filteringOutText} 
-        ${_.escape(window.wp_js_object.translations.sources_contacts_warning)}
+
+        <h3>${window.lodash.escape(window.wp_js_object.translations.sources_active_by_seeker_path)}</h3>
+
+        <p>${window.lodash.escape(window.wp_js_object.translations.sources_only_active)}
+        ${filteringOutText}
+        ${window.lodash.escape(window.wp_js_object.translations.sources_contacts_warning)}
         </p>
-  
+
         <div id="chartdiv2" style="min-height: ${height}"></div>
-  
+
         <hr>
-  
-        <h3>${_.escape(window.wp_js_object.translations.sources_active_milestone)}</h3>
-  
-        <p>${_.escape(window.wp_js_object.translations.sources_active_status_warning)}
-        ${filteringOutText} 
-        ${_.escape(window.wp_js_object.translations.sources_contacts_warning_milestones)}</p>
-         
-        <p><b>${_.escape(window.wp_js_object.translations.faith_milestone)}:</b> <select class="js-milestone"></select></p>
-  
+
+        <h3>${window.lodash.escape(window.wp_js_object.translations.sources_active_milestone)}</h3>
+
+        <p>${window.lodash.escape(window.wp_js_object.translations.sources_active_status_warning)}
+        ${filteringOutText}
+        ${window.lodash.escape(window.wp_js_object.translations.sources_contacts_warning_milestones)}</p>
+
+        <p><b>${window.lodash.escape(window.wp_js_object.translations.faith_milestone)}:</b> <select class="js-milestone"></select></p>
+
         <div id="chartdiv3" style="min-height: ${height}"></div>
       `))
 
@@ -86,7 +85,7 @@ jQuery(document).ready(function() {
           item.translated_source = 'null (none set)';
         } else {
           item.translated_source =
-            _.get(localizedObject, `sources.${item.name_of_source}`) || item.name_of_source;
+            window.lodash.get(localizedObject, `sources.${item.name_of_source}`) || item.name_of_source;
         }
       }
       // We need to collect all status names, because not all of them are in localizedObject
@@ -124,7 +123,7 @@ jQuery(document).ready(function() {
         // Create chart instance
         let chart = am4core.create("chartdiv1", am4charts.XYChart);
 
-        chart.data = _.orderBy(data, (a => {
+        chart.data = window.lodash.orderBy(data, (a => {
           return a["total"] || 0
         }), ['asc']);
 
@@ -141,13 +140,13 @@ jQuery(document).ready(function() {
         // Create series
         for (let status of status_names) {
           let series = chart.series.push(new am4charts.ColumnSeries());
-          if (_.get(localizedObject.overall_status_settings.default[status], "color")) {
+          if (window.lodash.get(localizedObject.overall_status_settings.default[status], "color")) {
             series.columns.template.fill = am4core.color(localizedObject.overall_status_settings.default[status].color);
           }
           series.stroke = am4core.color("#000000");
           series.dataFields.valueX = "status_" + status;
           series.dataFields.categoryY = "translated_source";
-          series.name = _.get(localizedObject.overall_status_settings.default[status], "label", status);
+          series.name = window.lodash.get(localizedObject.overall_status_settings.default[status], "label", status);
           series.tooltipText = "{name}: [bold]{valueX}[/]";
           series.stacked = true;
         }
@@ -162,7 +161,7 @@ jQuery(document).ready(function() {
 
         // Create chart instance
         let chart2 = am4core.create("chartdiv2", am4charts.XYChart);
-        chart2.data = _.orderBy(data, a => a.total_active_seeker_path || 0, ['asc']);
+        chart2.data = window.lodash.orderBy(data, a => a.total_active_seeker_path || 0, ['asc']);
 
         // Create axes
         let categoryAxis = chart2.yAxes.push(new am4charts.CategoryAxis());
@@ -180,7 +179,7 @@ jQuery(document).ready(function() {
           series.dataFields.valueX = "active_seeker_path_" + seeker_path;
           series.dataFields.categoryY = "translated_source";
           series.stroke = am4core.color("#000");
-          series.name = _.get(localizedObject, `seeker_path_settings.default[${seeker_path}].label`, seeker_path);
+          series.name = window.lodash.get(localizedObject, `seeker_path_settings.default[${seeker_path}].label`, seeker_path);
           series.tooltipText = "{name}: [bold]{valueX}[/]";
           series.stacked = true;
         }
@@ -200,7 +199,7 @@ jQuery(document).ready(function() {
         // Create chart instance
         let allSeries = [];
         let chart3 = am4core.create("chartdiv3", am4charts.XYChart);
-        chart3.data = _.orderBy(data, ['total'], ['asc']);
+        chart3.data = window.lodash.orderBy(data, ['total'], ['asc']);
 
         // Create axes
         let categoryAxis = chart3.yAxes.push(new am4charts.CategoryAxis());
@@ -233,7 +232,7 @@ jQuery(document).ready(function() {
 
         $(".js-milestone").on("change", function () {
           let milestone = $(this).val();
-          chart3.data = _.orderBy(data, (a => {
+          chart3.data = window.lodash.orderBy(data, (a => {
             return a["active_" + milestone] || 0
           }), ['asc']);
           for (let series of allSeries) {

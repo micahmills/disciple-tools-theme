@@ -93,14 +93,13 @@ class Disciple_Tools_People_Groups_Post_Type
      */
     public function __construct() {
         $this->post_type = 'peoplegroups';
-        $this->singular = __( 'People Group', 'disciple_tools' );
-        $this->plural = __( 'People Groups', 'disciple_tools' );
-        $this->search_items = sprintf( _x( "Search %s", "Search 'something'", 'disciple_tools' ), $this->plural );
         $this->args = [ 'menu_icon' => 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBjbGFzcz0ibmMtaWNvbi13cmFwcGVyIiBmaWxsPSIjZmZmZmZmIj48cGF0aCBkYXRhLWNvbG9yPSJjb2xvci0yIiBmaWxsPSIjZmZmZmZmIiBkPSJNMTIsMEM5LjU0MiwwLDcsMS44MDIsNyw0LjgxN2MwLDIuNzE2LDMuODY5LDYuNDg2LDQuMzEsNi45MDdMMTIsMTIuMzgybDAuNjktMC42NTkgQzEzLjEzMSwxMS4zMDMsMTcsNy41MzMsMTcsNC44MTdDMTcsMS44MDIsMTQuNDU4LDAsMTIsMHogTTEyLDdjLTEuMTA1LDAtMi0wLjg5Ni0yLTJjMC0xLjEwNSwwLjg5NS0yLDItMnMyLDAuODk1LDIsMiBDMTQsNi4xMDQsMTMuMTA1LDcsMTIsN3oiPjwvcGF0aD4gPHBhdGggZmlsbD0iI2ZmZmZmZiIgZD0iTTkuODg0LDE5LjQ5OUM5LjAyMywxOC44MTUsNy41NjMsMTgsNS41LDE4cy0zLjUyMywwLjgxNS00LjM4MywxLjQ5OEMwLjQwNywyMC4wNjEsMCwyMC45MTMsMCwyMS44MzZWMjRoMTEgdi0yLjE2NEMxMSwyMC45MTMsMTAuNTkzLDIwLjA2MSw5Ljg4NCwxOS40OTl6Ij48L3BhdGg+IDxjaXJjbGUgZmlsbD0iI2ZmZmZmZiIgY3g9IjUuNSIgY3k9IjEzLjUiIHI9IjMuNSI+PC9jaXJjbGU+IDxwYXRoIGZpbGw9IiNmZmZmZmYiIGQ9Ik0yMi44ODQsMTkuNDk5QzIyLjAyMywxOC44MTUsMjAuNTYzLDE4LDE4LjUsMThzLTMuNTIzLDAuODE1LTQuMzgzLDEuNDk4IEMxMy40MDcsMjAuMDYxLDEzLDIwLjkxMywxMywyMS44MzZWMjRoMTF2LTIuMTY0QzI0LDIwLjkxMywyMy41OTMsMjAuMDYxLDIyLjg4NCwxOS40OTl6Ij48L3BhdGg+IDxjaXJjbGUgZmlsbD0iI2ZmZmZmZiIgY3g9IjE4LjUiIGN5PSIxMy41IiByPSIzLjUiPjwvY2lyY2xlPjwvZz48L3N2Zz4=' ];
 
         add_action( 'init', [ $this, 'register_post_type' ] );
         add_filter( 'dt_get_post_type_settings', [ $this, 'dt_get_post_type_settings' ], 10, 2 );
         add_filter( 'dt_registered_post_types', [ $this, 'dt_registered_post_types' ], 10, 1 );
+        add_filter( "dt_filter_access_permissions", [ $this, "dt_filter_access_permissions" ], 20, 2 );
+        add_filter( 'dt_set_roles_and_permissions', [ $this, 'dt_set_roles_and_permissions' ], 100, 1 );
 
         if ( is_admin() ) {
             global $pagenow;
@@ -129,6 +128,10 @@ class Disciple_Tools_People_Groups_Post_Type
      * @return void
      */
     public function register_post_type() {
+        $this->singular = __( 'People Group', 'disciple_tools' );
+        $this->plural = __( 'People Groups', 'disciple_tools' );
+        $this->search_items = sprintf( _x( "Search %s", "Search 'something'", 'disciple_tools' ), $this->plural );
+
         $labels = [
             'name'                  => $this->plural,
             'singular_name'         => $this->singular,
@@ -143,13 +146,13 @@ class Disciple_Tools_People_Groups_Post_Type
             'feeds'      => false,
         ];
         $capabilities = [
-            'edit_post'           => 'edit_peoplegroup',
-            'read_post'           => 'read_peoplegroup',
-            'delete_post'         => 'delete_peoplegroup',
+            'edit_post'           => 'edit_peoplegroups',
+            'read_post'           => 'read_peoplegroups',
+            'delete_post'         => 'delete_peoplegroups',
             'delete_others_posts' => 'delete_others_peoplegroups',
             'delete_posts'        => 'delete_peoplegroups',
             'edit_posts'          => 'edit_peoplegroups',
-            'edit_others_posts'   => 'edit_others_peoplegroups',
+            'edit_others_posts'   => 'edit_peoplegroups',
             'publish_posts'       => 'publish_peoplegroups',
             'read_private_posts'  => 'read_private_peoplegroups',
         ];
@@ -609,7 +612,7 @@ class Disciple_Tools_People_Groups_Post_Type
         //            'section' => 'status'
         //        ];
 
-        return apply_filters( 'dt_custom_fields_settings', $fields, "people_groups" );
+        return DT_Posts::get_post_field_settings( "people_groups" );
     }
 
     public function dt_registered_post_types( $post_types ){
@@ -701,6 +704,22 @@ class Disciple_Tools_People_Groups_Post_Type
         unset(
             $submenu['edit.php?post_type=peoplegroups'][10]
         );
+    }
+
+    public static function dt_filter_access_permissions( $permissions, $post_type ){
+        if ( $post_type === "peoplegroups" ){
+            $permissions = [];
+        }
+        return $permissions;
+    }
+    public function dt_set_roles_and_permissions( $expected_roles ){
+        if ( isset( $expected_roles["administrator"] ) ){
+            $expected_roles["administrator"]["permissions"]['edit_peoplegroups'] = true;
+        }
+        if ( isset( $expected_roles["dt_admin"] ) ){
+            $expected_roles["dt_admin"]["permissions"]['edit_peoplegroups'] = true;
+        }
+        return $expected_roles;
     }
 
 } // End Class

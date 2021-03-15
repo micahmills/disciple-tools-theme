@@ -70,6 +70,11 @@ footer {
     bottom: 0;
     width: 95%;
 }
+
+object {
+    width: 100%;
+    height: 100%;
+}
 /*********************
 LINK STYLES
 *********************/
@@ -114,15 +119,35 @@ NAVIGATION STYLES
     padding: 0 20px;
     z-index: 999;
 
+    .top-bar-right > .dropdown.menu > li {
+        margin: 0 10px;
+    }
+
     .dropdown.menu {
-        li {
-            margin: 0 10px;
+        a {
+          background-color: $primary-color;
         }
+        li.active > a {
+            background: #005a87;
+        }
+    }
+    .top-bar-left {
+        .dropdown.menu a:hover {
+            background-color: #224f72
+        }
+        //make dropdown caret white
+        .dropdown.menu>li.is-dropdown-submenu-parent>a:after {
+            border-color: #fefefe transparent transparent;
+        }
+    }
+    .dropdown.menu .is-submenu-item a:hover {
+        background-color: #224f72
     }
 
     a {
         font-weight: bold;
         padding: 1rem;
+        color: #fefefe;
     }
 
     .image-menu-nav {
@@ -155,7 +180,14 @@ NAVIGATION STYLES
     vertical-align: top;
     position: relative;
     top: -5px;
-    left: -15px;
+    margin-left:-15px;
+}
+.notification-count-offcanvas {
+    display: none;
+    vertical-align: middle;
+    position: relative;
+    top: 0;
+    margin-left:10px;
 }
 .add-new-items-dropdown {
     background-color: #3f729b;
@@ -174,7 +206,12 @@ nav.second-bar {
     padding: 0.5em;
     background-color: white;
     width: 100%;
-    top: auto !important;
+    top: auto;
+    transform: translateX(0);
+
+    .title {
+        font-weight: bold;
+    }
 
     .breadcrumbs {
         margin-bottom: 0;
@@ -187,6 +224,22 @@ nav.second-bar {
             padding-right: 5px;
         }
         padding: 0.4em 0.75em;
+        margin-top: .2em;
+        margin-bottom: .2em;
+
+        @media screen and (max-width : 639px) {
+            &.follow {
+                padding: 0em .75em;
+                .fi-eye {
+                    font-size: 22px;
+                    line-height: 16px;
+                }
+            }
+        }
+    }
+    .dropdown.menu>li>a {
+        padding-top: 0.4em;
+        padding-bottom: 0.4em;
     }
 
     input {
@@ -206,6 +259,54 @@ nav.second-bar {
     }
 }
 
+.search-input {
+    margin-right: 0;
+}
+
+nav.second-bar .advanced_search {
+    border: 1px solid #cacaca;
+    border-inline-start: 0;
+    height: 2em;
+    padding: 0.15em 0.5em;
+    transform: translateX(-10px);
+    display: inline-block;
+    position: relative;
+}
+
+html[dir='rtl'] nav.second-bar .advanced_search {
+    transform: translateX(14px);
+}
+
+.advancedSearch-count {
+    vertical-align: top;
+    position: absolute;
+    font-size: .45em;
+    font-weight: bold;
+    top: 0;
+    left: 1.15rem;
+}
+
+#second-bar-small{
+    // transition: all .2s;
+    border-top: none;
+    &.is-stuck {
+        border-top: .5rem solid $primary-color;
+        .grid-x {
+            display: none;
+        }
+        #record-tagline {
+            opacity:0;
+            height: 0;
+        }
+    }
+    .grid-x {
+        margin-bottom: .3rem;
+    }
+    #record-tagline {
+        transition: all .3s;
+        opacity:1;
+    }
+}
 .off-canvas-list {
     ul {
         margin-left: 0;
@@ -259,6 +360,9 @@ div.sticky-container {
     z-index: 1;
 }
 
+.title-bar {
+    padding: 0.7rem;
+}
 .title-bar img {
     vertical-align: middle;
 }
@@ -327,6 +431,12 @@ i.large {
     font-size: 50px;
     line-height: 50px;
 }
+i.medium {
+    font-size: 25px;
+    line-height: 25px;
+    transform: translateY(2px);
+    display: inline-block;
+}
 
 button {
     cursor: pointer;
@@ -372,6 +482,7 @@ Title for boxed section
     font-size: 14px;
     white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 /*********************
 JQUERY OVERRIDES
@@ -541,6 +652,8 @@ button.loader {
         padding-bottom: 3px;
 
         img {
+            min-width: 15px;
+            min-height: 15px;
             width: 20px;
             height: 20px;
         }
@@ -646,12 +759,23 @@ html[dir='rtl'] {
     }
 
     .float-left {
+
         float: right !important;
     }
     .notification-count {
         right: -15px;
         left: 0;
+        margin-left:-15px;
     }
+    .notification-count-offcanvas {
+        right: 0;
+        left: 0;
+        margin-left:10px;
+    }
+    .title-bar-right {
+        text-align: left;
+    }
+
 }
 
 .empty-notification-message {
@@ -727,6 +851,14 @@ a.dt-green:hover {
 }
 
 .help-button {
+    margin-right: 3px;
+    margin-left: 3px;
+}
+.help-button-tile {
+    margin-right: 3px;
+    margin-left: 3px;
+}
+.help-button-field {
     margin-right: 3px;
     margin-left: 3px;
 }
@@ -970,4 +1102,88 @@ label.dt-switch:active:after {
     }
   }
 
+}
+
+
+.template-settings {
+    #multiplier {
+        .section-subheader {
+            img {
+                height: 15px;
+            }
+            margin-bottom: 4px;
+        }
+    }
+}
+
+.dt-status-square {
+    height: 13px;
+    width: 13px;
+    display: inline-block;
+    border-radius: 2px;
+}
+
+img.dt-icon {
+    height: 15px;
+    width: 15px;
+}
+img.dt-blue-icon {
+    filter: invert(41%) sepia(42%) saturate(518%) hue-rotate(164deg) brightness(94%) contrast(100%);
+}
+
+.template-new-post {
+    .type-options {
+        display:flex;
+        flex-wrap:wrap;
+        margin-bottom: 15px;
+    }
+    .type-option:hover {
+        .type-option-border {
+            background-color: #ecf5fc;
+            border: 1px solid #c2e0ff;
+            border-radius:15px;
+        }
+    }
+    .type-option.selected {
+        .type-option-border {
+            background-color: #ecf5fc;
+            border: 1px solid #c2e0ff;
+            border-radius:15px;
+        }
+    }
+    .type-option{
+        padding-right:10px;
+        display:flex;
+        flex-basis: 25%;
+        .type-option-border {
+            padding: 5px 10px;
+            border: 1px solid #c2e0ff;
+            border-radius:15px;
+            width: 100%;
+        }
+        input {
+            align-self:center;
+            margin-right:5px;
+            margin-bottom: 0;
+        }
+        .type-option-title {
+            color:#3f729b;
+            font-size: larger;
+        }
+
+        .type-option-rows {
+            display: inline-block;
+            div {
+                display: block;
+                margin-bottom: 5px;
+            }
+
+        }
+    }
+}
+@media screen and (max-width : 640px) {
+    .template-new-post .type-option {
+        flex-basis: 100%;
+        margin-bottom: 1.25em;
+    }
 }

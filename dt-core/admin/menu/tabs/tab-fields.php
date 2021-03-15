@@ -88,47 +88,14 @@ class Disciple_Tools_Utilities_Fields_Tab extends Disciple_Tools_Abstract_Menu_B
         <p>Note: Here are this fields available on this Instance. Some are default fields, some are installed by plugins or in the settings page.</p>
         <?php
 
-        $channels = [];
-
-        if ( $type === 'groups' ){
-            $fields = Disciple_Tools_Groups_Post_Type::instance()->get_custom_fields_settings();
-        } else {
-            $fields = Disciple_Tools_Contact_Post_Type::instance()->get_custom_fields_settings();
-            $channels = Disciple_Tools_Contact_Post_Type::instance()->get_channels_list();
-        }
-
-        ?>
+        $post_settings = DT_Posts::get_post_settings( $type );
+        $fields = $post_settings["fields"];
 
 
-        <?php
-        if ( !empty( $channels ) ){
-            ?>
-            <h3>Contact Methods / Channels</h3>
-            <table class="widefat striped">
-                <tr>
-                    <th style="width:30%">Name</th>
-                    <th style="width:20%">Key</th>
-                    <th style="width:10%"></th>
-                    <th style="width:40%"></th>
-                </tr>
-            <?php
-            foreach ( $channels as $channel_key => $channel_value ) : ?>
-                <tr>
-                    <th><?php echo esc_html( $channel_value["label"] ) ?></th>
-                    <th><?php echo esc_html( 'contact_' . $channel_key ) ?></th>
-                    <th></th>
-                    <th></th>
-                </tr>
-            <?php endforeach; ?>
-            </table>
-            <?php
-        }
-
-
-        $types = [ "text", "date", 'boolean', 'key_select', 'multi_select', 'array', 'connection', 'post_user_meta' ];
+        $types = [ "text", "date", 'boolean', 'key_select', 'multi_select', 'array', 'connection', 'post_user_meta', 'number', 'communication_channel' ];
         foreach ( $types as $type ){
             ?>
-            <h3>Fields: <?php echo esc_html( $type ) ?></h3>
+            <h3>Field type: <?php echo esc_html( $type ) ?></h3>
 
             <table class="widefat striped">
                 <tr>
@@ -149,9 +116,11 @@ class Disciple_Tools_Utilities_Fields_Tab extends Disciple_Tools_Abstract_Menu_B
                             <?php if ( ( $field_value['type'] === "key_select" || $field_value["type"] === "multi_select" ) && !empty( $field_value["default"] ) ) : ?>
                             Options:
                             <ul style="margin-top:0; list-style: circle; padding-inline-start: 40px;">
-                                <?php foreach ( $field_value["default"] as $option_key => $option_value ) : ?>
+                                <?php foreach ( $field_value["default"] as $option_key => $option_value ) :
+                                    if ( isset( $option_value["label"] ) ) : ?>
                                     <li><?php echo esc_html( $option_key ) ?> => <?php echo esc_html( $option_value["label"] ) ?></li>
-                                <?php endforeach; ?>
+                                    <?php endif;
+                                endforeach; ?>
                             </ul>
                             <?php elseif ( $field_value['type'] === 'connection' ): ?>
                                 p2p_key: <?php echo esc_html( $field_value["p2p_key"] ) ?> <br>

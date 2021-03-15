@@ -21,7 +21,8 @@ class Disciple_Tools_Contacts_Transfer
         add_action( 'dt_share_panel', [ $this, 'share_panel' ], 10, 1 );
         add_filter( 'site_link_type', [ $this, 'site_link_type' ], 10, 1 );
         add_filter( 'site_link_type_capabilities', [ $this, 'site_link_capabilities' ], 10, 1 );
-        add_action( 'dt_contact_detail_notification', [ $this, 'contact_transfer_notification' ] );
+        add_action( 'dt_record_top_above_details', [ $this, 'contact_transfer_notification' ], 10, 2 );
+        add_action( 'rest_api_init', [ $this, 'add_api_routes' ] );
     }
 
     // Adds the type of connection to the site link system
@@ -44,8 +45,8 @@ class Disciple_Tools_Contacts_Transfer
         return $args;
     }
 
-    public function contact_transfer_notification( $contact ) {
-        if ( isset( $contact['reason_closed']['key'] ) && $contact['reason_closed']['key'] === 'transfer' ) {
+    public function contact_transfer_notification( $post_type, $contact ) {
+        if ( $post_type === "contacts" && isset( $contact['reason_closed']['key'] ) && $contact['reason_closed']['key'] === 'transfer' ) {
             ?>
             <section class="cell small-12">
                 <div class="bordered-box detail-notification-box" style="background-color:#3F729B">
@@ -59,20 +60,41 @@ class Disciple_Tools_Contacts_Transfer
 
     /**
      * Rest Endpoints
-     * @see /dt-contacts/contacts-endpoints.php
      */
+    public function add_api_routes() {
+        $namespace = "dt-posts/v2";
+        register_rest_route(
+            $namespace, '/contacts/transfer', [
+                "methods"  => "POST",
+                "callback" => [ $this, 'contact_transfer_endpoint' ],
+            ]
+        );
+        register_rest_route(
+            $namespace, '/contacts/receive-transfer', [
+                "methods"  => "POST",
+                "callback" => [ $this, 'receive_transfer_endpoint' ],
+            ]
+        );
+        //deprecated
+        register_rest_route(
+            'dt-public/v1', '/contact/transfer', [
+                "methods"  => "POST",
+                "callback" => [ $this, 'public_contact_transfer' ],
+            ]
+        );
+    }
 
     /**
      * Section to display in the share panel for the transfer function
      *
-     * @param $post_type
+     * @param $post
      */
     public function share_panel( $post ) {
         if ( empty( $post ) ) {
             global $post;
         }
 
-        if ( isset( $post->post_type ) && 'contacts' === $post->post_type && current_user_can( 'view_any_contacts' ) ) {
+        if ( isset( $post->post_type ) && 'contacts' === $post->post_type && current_user_can( 'dt_all_access_contacts' ) ) {
             $list = Site_Link_System::get_list_of_sites_by_type( [ 'contact_sharing', 'contact_sending' ] );
             if ( empty( $list ) ) {
                 return;
@@ -83,24 +105,24 @@ class Disciple_Tools_Contacts_Transfer
             if ( $transfer_site_link_post_id ) {
                 $site_title = get_the_title( $transfer_site_link_post_id );
             } else {
-                $site_title = __( 'another site' );
+                $site_title = __( 'another site', 'disciple_tools' );
             }
 
             ?>
-            <hr size="1px">
+            <hr>
             <div class="grid-x">
 
                 <?php if ( $foreign_key_exists ) : ?>
                 <div class="cell" id="transfer-warning">
 
-                    <h6><?php echo sprintf( esc_html__( 'Already transfered to %s' ), esc_html( $site_title ) ) ?></h6>
+                    <h6><?php echo sprintf( esc_html__( 'Already transfered to %s', 'disciple_tools' ), esc_html( $site_title ) ) ?></h6>
                     <p><?php esc_html_e( 'NOTE: You have already transferred this contact. Transferring again might create duplicates. Do you still want to override this warning and continue with your transfer?', 'disciple_tools' ) ?></p>
                     <p><button type="button" onclick="jQuery('#transfer-form').show();jQuery('#transfer-warning').hide();" class="button"><?php esc_html_e( 'Override and Continue', 'disciple_tools' ) ?></button></p>
                 </div>
                 <?php endif; ?>
 
                 <div class="cell" id="transfer-form" <?php if ( $foreign_key_exists ) { echo 'style="display:none;"'; }?>>
-                    <h6><a href="https://disciple-tools.readthedocs.io/en/latest/Disciple_Tools_Theme/getting_started/admin.html#site-links" target="_blank"> <img class="help-icon" src="<?php echo esc_html( get_template_directory_uri() . '/dt-assets/images/help.svg' ) ?>"/></a> <?php esc_html_e( 'Transfer this contact to:', 'disciple_tools' ) ?></h6>
+                    <h6><a href="https://disciple.tools/user-docs/getting-started-info/admin/site-links/" target="_blank"> <img class="help-icon" src="<?php echo esc_html( get_template_directory_uri() . '/dt-assets/images/help.svg' ) ?>"/></a> <?php esc_html_e( 'Transfer this contact to:', 'disciple_tools' ) ?></h6>
                     <select name="transfer_contact" id="transfer_contact" onchange="jQuery('#transfer_button_div').show();">
                         <option value=""></option>
                         <?php
@@ -153,31 +175,37 @@ class Disciple_Tools_Contacts_Transfer
 
         $post_data = get_post( $contact_id, ARRAY_A );
         $postmeta_data = get_post_meta( $contact_id );
-        $contact = Disciple_Tools_Contacts::get_contact( $contact_id );
+        if ( isset( $postmeta_data['duplicate_data'] ) ) {
+            unset( $postmeta_data['duplicate_data'] );
+        }
+        $contact = DT_Posts::get_post( "contacts", $contact_id );
 
         $args = [
             'method' => 'POST',
+            'timeout' => 20,
             'body' => [
                 'transfer_token' => $site['transfer_token'],
                 'contact_data' => [
                     'post' => $post_data,
                     'postmeta' => $postmeta_data,
                     'comments' => dt_get_comments_with_redacted_user_data( $contact_id ),
-                    'locations' => $contact['locations'], // @todo remove or rewrite? Because of location_grid upgrade.
                     'people_groups' => $contact['people_groups'],
                     'transfer_foreign_key' => $contact['transfer_foreign_key'] ?? 0,
                 ],
-            ]
+            ],
+            'headers' => [
+                'Authorization' => 'Bearer ' . $site['transfer_token'],
+            ],
         ];
 
-        $result = wp_remote_post( 'https://' . $site['url'] . '/wp-json/dt-public/v1/contact/transfer', $args );
+        $result = wp_remote_post( 'https://' . $site['url'] . '/wp-json/dt-posts/v2/contacts/receive-transfer', $args );
         if ( is_wp_error( $result ) ){
             return $result;
         }
         $result_body = json_decode( $result['body'] );
 
         if ( ! ( isset( $result_body->status ) && 'OK' === $result_body->status ) ) {
-            $errors->add( 'transfer', $result_body->error ?? __( 'Unknown error.' ) );
+            $errors->add( 'transfer', $result_body->error ?? __( 'Unknown error.', 'disciple_tools' ) );
             return $errors;
         }
 
@@ -207,11 +235,16 @@ class Disciple_Tools_Contacts_Transfer
             }
         }
 
+
+        $comment = sprintf( __( 'This contact was transferred to %s for further follow-up.', 'disciple_tools' ), esc_attr( get_the_title( $site_post_id ) ) );
+        if ( isset( $result_body->created_id )){
+            $comment .= ' [link](https://' . $site['url'] . '/contacts/' . esc_attr( $result_body->created_id ) . ')';
+        }
         // add note that the record was transferred
         $time_in_mysql_format = current_time( 'mysql' );
         $comment_result = wp_insert_comment([
             'comment_post_ID' => $contact_id,
-            'comment_content' => sprintf( 'This contact was transferred to %s for further follow-up.', esc_attr( get_the_title( $site_post_id ) ) ),
+            'comment_content' => $comment,
             'comment_type' => '',
             'comment_parent' => 0,
             'user_id' => get_current_user_id(),
@@ -264,9 +297,9 @@ class Disciple_Tools_Contacts_Transfer
         $errors = new WP_Error();
         $site_link_post_id = Site_Link_System::get_post_id_by_site_key( Site_Link_System::decrypt_transfer_token( $params['transfer_token'] ) );
 
-    /**
-     * Insert contact record and meta
-     */
+        /**
+         * Insert contact record and meta
+         */
         // build meta value elements
         foreach ( $contact_data['postmeta'] as $key => $value ) {
             if ( isset( $value[1] ) ) {
@@ -274,7 +307,10 @@ class Disciple_Tools_Contacts_Transfer
                     $lagging_meta_input[] = [ $key => $item ];
                 }
             } else {
-                $meta_input[$key] = $value[0];
+                if ( $key === "type" && $value[0] === "media" ){
+                    $value[0] = "access";
+                }
+                $meta_input[$key] = maybe_unserialize( $value[0] );
             }
         }
         $post_args['meta_input'] = $meta_input;
@@ -309,21 +345,23 @@ class Disciple_Tools_Contacts_Transfer
         }
 
         // insert lagging post meta
-        foreach ( $lagging_meta_input as $key => $value ) {
-            $meta_id = add_post_meta( $post_id, $key, $value, true );
-            if ( ! $meta_id ) {
-                $errors->add( 'meta_insert_fail', 'Meta data insert fail for "'. $key . '"' );
+        foreach ( $lagging_meta_input as $index => $row ) {
+            foreach ( $row as $key => $value ) {
+                $meta_id = add_post_meta( $post_id, $key, $value, false );
+                if ( !$meta_id ) {
+                    $errors->add( 'meta_insert_fail', 'Meta data insert fail for "'. $key . '"' );
+                }
             }
         }
 
-    /**
-     * Insert comments
-     */
+        /**
+         * Insert comments
+         */
         if ( ! empty( $comment_data ) ) {
             foreach ( $comment_data as $comment ) {
                 // set variables
                 $comment['comment_post_ID'] = $post_id;
-                $comment['comment_author'] = __( 'Transfer Bot' ) . ' (' . $comment['user_id'] . ')';
+                $comment['comment_author'] = __( 'Transfer Bot', 'disciple_tools' ) . ' (' . $comment['user_id'] . ')';
                 $comment['user_id'] = 0;
                 $comment['comment_approved'] = 1;
                 unset( $comment['comment_ID'] );
@@ -341,16 +379,16 @@ class Disciple_Tools_Contacts_Transfer
         $transfer_comment = wp_insert_comment([
                 'user_id' => 0,
                 'comment_post_ID' => $post_id,
-                'comment_author' => __( 'Transfer Bot' ),
+                'comment_author' => __( 'Transfer Bot', 'disciple_tools' ),
                 'comment_approved' => 1,
-                'comment_content' => __( 'Contact transferred from site' ) . ' "' . esc_html( get_the_title( $site_link_post_id ) ) . '"',
+                'comment_content' => __( 'Contact transferred from site', 'disciple_tools' ) . ' "' . esc_html( get_the_title( $site_link_post_id ) ) . '"',
         ]);
         if ( is_wp_error( $transfer_comment ) ) {
             $errors->add( 'comment_insert_fail', 'Comment insert fail for transfer notation.' );
         }
 
         if ( $possible_duplicate || $duplicate_post_id ) {
-            $message = __( 'ALERT: Possible duplicate contact from a previous transfer.' );
+            $message = __( 'ALERT: Possible duplicate contact from a previous transfer.', 'disciple_tools' );
             if ( $duplicate_post_id ) {
                 $message = $message . ' <a href="'. esc_url( site_url() ) . '/contacts/' . esc_attr( $duplicate_post_id ) .'">' . esc_attr( get_the_title( $duplicate_post_id ) ) . '</a>';
             }
@@ -358,7 +396,7 @@ class Disciple_Tools_Contacts_Transfer
             $transfer_comment = wp_insert_comment([
                 'user_id' => 0,
                 'comment_post_ID' => $post_id,
-                'comment_author' => __( 'Transfer Bot' ),
+                'comment_author' => __( 'Transfer Bot', 'disciple_tools' ),
                 'comment_approved' => 1,
                 'comment_content' => $message,
             ]);
@@ -370,7 +408,8 @@ class Disciple_Tools_Contacts_Transfer
         return [
             'status' => 'OK',
             'transfer_foreign_key' => $post_args['meta_input']['transfer_foreign_key'],
-            'errors' => $errors
+            'errors' => $errors,
+            'created_id' => $post_id
         ];
     }
 
@@ -393,5 +432,162 @@ class Disciple_Tools_Contacts_Transfer
             return false;
         }
     }
+
+    public function public_contact_transfer( WP_REST_Request $request ){
+
+        $params = $this->process_token( $request );
+        if ( is_wp_error( $params ) ) {
+            return [
+                'status' => 'FAIL',
+                'error' => 'Transfer token error.'
+            ];
+        }
+
+        if ( ! current_user_can( 'create_contacts' ) ) {
+            return [
+                'status' => 'FAIL',
+                'error' => 'Permission error.'
+            ];
+        }
+
+        if ( isset( $params['contact_data'] ) ) {
+            $result = self::receive_transferred_contact( $params );
+            if ( is_wp_error( $result ) ) {
+                return [
+                    'status' => 'FAIL',
+                    'error' => $result->get_error_message(),
+                ];
+            } else {
+                return [
+                    'status' => 'OK',
+                    'error' => $result['errors'],
+                    'created_id' => $result['created_id'],
+                ];
+            }
+        } else {
+            return [
+                'status' => 'FAIL',
+                'error' => 'Missing required parameter'
+            ];
+        }
+    }
+
+    /**
+     * Public key processing utility. Use this at the beginning of public endpoints
+     *
+     * @param WP_REST_Request $request
+     *
+     * @return array|WP_Error
+     */
+    public function process_token( WP_REST_Request $request ) {
+
+        $params = $request->get_params();
+
+        // required token parameter challenge
+        if ( ! isset( $params['transfer_token'] ) ) {
+            return new WP_Error( __METHOD__, 'Missing parameters.' );
+        }
+
+        $valid_token = Site_Link_System::verify_transfer_token( $params['transfer_token'] );
+
+        // required valid token challenge
+        if ( ! $valid_token ) {
+            dt_write_log( $valid_token );
+            return new WP_Error( __METHOD__, 'Invalid transfer token' );
+        }
+
+        return $params;
+    }
+
+    public function contact_transfer_endpoint( WP_REST_Request $request ){
+
+        if ( ! ( current_user_can( 'dt_all_access_contacts' ) || current_user_can( 'manage_dt' ) ) ) {
+            return new WP_Error( __METHOD__, 'Insufficient permissions' );
+        }
+
+        $params = $request->get_params();
+        if ( ! isset( $params['contact_id'] ) || ! isset( $params['site_post_id'] ) ){
+            return new WP_Error( __METHOD__, "Missing required parameters.", [ 'status' => 400 ] );
+        }
+
+        return self::contact_transfer( $params['contact_id'], $params['site_post_id'] );
+
+    }
+
+    public function receive_transfer_endpoint( WP_REST_Request $request ){
+        $params = $request->get_params();
+        if ( ! current_user_can( 'create_contacts' ) ) {
+            return new WP_Error( __METHOD__, 'Insufficient permissions' );
+        }
+
+        if ( isset( $params['contact_data'] ) ) {
+            $result = self::receive_transferred_contact( $params );
+            if ( is_wp_error( $result ) ) {
+                return [
+                    'status' => 'FAIL',
+                    'error' => $result->get_error_message(),
+                ];
+            } else {
+                return [
+                    'status' => 'OK',
+                    'error' => $result['errors'],
+                    'created_id' => $result['created_id'],
+                ];
+            }
+        } else {
+            return [
+                'status' => 'FAIL',
+                'error' => 'Missing required parameter'
+            ];
+        }
+    }
 }
 Disciple_Tools_Contacts_Transfer::instance();
+
+function dt_get_comments_with_redacted_user_data( $post_id ) {
+    $comments = get_comments( [ 'post_id' => $post_id ] );
+    if ( empty( $comments ) ) {
+        return $comments;
+    }
+    $email_note = __( 'redacted email', 'disciple_tools' );
+    $name_note = __( 'redacted name', 'disciple_tools' );
+    $redacted_note = __( 'redacted', 'disciple_tools' );
+
+    $users = get_users();
+
+    foreach ( $comments as $index => $comment ) {
+        $comment_content = $comment->comment_content;
+
+        // replace non-@mention references to login names, display names, or user emails
+        foreach ( $users as $user ) {
+            if ( !empty( $user->data->user_login ) ) {
+                $comment_content = str_replace( ' ' . $user->data->user_login, '(' . $name_note . ')', $comment_content );
+                $comment_content = str_replace( $user->data->user_login . ' ', '(' . $name_note . ')', $comment_content );
+            }
+            if ( !empty( $user->data->display_name ) ) {
+                $comment_content = str_replace( ' ' . $user->data->display_name, '(' . $name_note . ')', $comment_content );
+                $comment_content = str_replace( $user->data->display_name . ' ', '(' . $name_note . ')', $comment_content );
+            }
+            if ( !empty( $user->data->user_nicename ) ) {
+                $comment_content = str_replace( $user->data->user_nicename . ' ', '(' . $name_note . ')', $comment_content );
+                $comment_content = str_replace( ' ' . $user->data->user_nicename, '(' . $name_note . ')', $comment_content );
+            }
+            if ( ! empty( $user->data->user_email ) ) {
+                $comment_content = str_replace( $user->data->user_email, '(' . $email_note . ')', $comment_content );
+            }
+        }
+
+        // replace @mentions
+        preg_match_all( '/@[0-9a-zA-Z](\.?[0-9a-zA-Z])*/', $comment_content, $matches );
+        foreach ( $matches[0] as $match_key => $match ){
+            $comment_content = str_replace( $match, '@' . $name_note, $comment_content );
+        }
+
+        // replace duplicate notes
+        $comment_content = str_replace( site_url(), '#', $comment_content );
+
+        $comments[$index]->comment_content = $comment_content;
+    }
+
+    return $comments;
+}

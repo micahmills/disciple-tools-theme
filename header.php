@@ -29,15 +29,22 @@
             <meta name="theme-color" content="#3f729b">
         <?php } ?>
 
-        <title><?php
+        <title>
+        <?php
         if ( is_single() ) {
-            single_post_title( '', true );
+            if ( DT_Posts::can_view( get_post_type(), GET_THE_ID() ) ){
+                single_post_title( '', true );
+            } else {
+                echo esc_html( __( "D.T Record", 'disciple_tools' ) );
+            }
         } else if ( is_archive() ){
             echo post_type_archive_title();
         } else {
-            bloginfo( 'name' );
+            $title_string = ucwords( str_replace( '/', ' - ', dt_get_url_path() ) );
+            echo esc_html( $title_string );
         }
-        ?></title>
+        ?>
+        </title>
 
         <?php wp_head(); ?>
 
@@ -49,7 +56,7 @@
 
         <div class="off-canvas-wrapper">
 
-            <?php get_template_part( 'dt-assets/parts/content', 'offcanvas' ); ?>
+            <?php get_template_part( 'dt-assets/parts/nav', 'offcanvas' ); ?>
 
             <div class="off-canvas-content" data-off-canvas-content>
 
@@ -57,20 +64,20 @@
 
                      <!-- This navs will be applied to the topbar, above all content
                           To see additional nav styles, visit the /parts directory -->
-                        <?php get_template_part( 'dt-assets/parts/nav', 'offcanvas-topbar' ); ?>
+                        <?php get_template_part( 'dt-assets/parts/nav', 'topbar' ); ?>
 
                 </header> <!-- end .header -->
 
                 <noscript>
-                    <header class="header"><?php esc_html_e( "Javascript must be enabled for this site to function correctly." ); ?></header>
+                    <header class="header"><?php esc_html_e( "Javascript must be enabled for this site to function correctly.", 'disciple_tools' ); ?></header>
                 </noscript>
 
                 <div id="js-missing-required-browser-features-notice" hidden>
                     <header class="header">
                         <br><br><br>
-                        <?php esc_html_e( "You seem to be using an out-of-date web browser. Without the most up-to-date version of your browser, this may site may not function correctly. Please note that Internet Explorer is not supported." ); ?>
+                        <?php esc_html_e( "You seem to be using an out-of-date web browser. Without the most up-to-date version of your browser, this may site may not function correctly. Please note that Internet Explorer is not supported.", 'disciple_tools' ); ?>
                         <a href="https://whatbrowser.org" rel="nofollow">
-                            <?php esc_html_e( "See what browser you are using." ); ?>
+                            <?php esc_html_e( "See what browser you are using.", 'disciple_tools' ); ?>
                         </a>
                     </header>
                 </div>

@@ -24,13 +24,14 @@ abstract class DT_Metrics_Chart_Base
             if ( !$this->has_permission() ){
                 return;
             }
-            add_filter( 'dt_metrics_menu', [ $this, 'base_menu' ], 99 ); //load menu links
+            add_filter( 'dt_metrics_menu', [ $this, 'base_menu' ], 20 ); //load menu links
 
             if ( strpos( $url_path, "metrics/$this->base_slug/$this->slug" ) === 0 ) {
                 add_filter( 'dt_templates_for_urls', [ $this, 'base_add_url' ] ); // add custom URLs
                 add_action( 'wp_enqueue_scripts', [ $this, 'base_scripts' ], 99 );
             }
         }
+
     }
 
     /**
@@ -50,7 +51,7 @@ abstract class DT_Metrics_Chart_Base
             $content .= '
             <li><a href="'. site_url( '/metrics/'. $this->base_slug .'/'. $this->slug ) .'">'.$this->base_title.'</a>
                 <ul class="menu vertical nested" id="' . $this->base_slug . '-menu">'
-                        . $line . '
+                    . $line . '
             </ul></li>';
         } else {
             $content = substr_replace( $content, $ref . $line, $pos, strlen( $ref ) );
@@ -75,12 +76,12 @@ abstract class DT_Metrics_Chart_Base
     public function base_scripts() {
         wp_localize_script(
             'dt_'.$this->base_slug.'_script', 'wpMetricsBase', [
-                'slug' => $this->base_slug,
-                'root' => esc_url_raw( rest_url() ),
-                'plugin_uri' => plugin_dir_url( __DIR__ ),
-                'nonce' => wp_create_nonce( 'wp_rest' ),
-                'current_user_login' => wp_get_current_user()->user_login,
-                'current_user_id' => get_current_user_id()
+            'slug' => $this->base_slug,
+            'root' => esc_url_raw( rest_url() ),
+            'plugin_uri' => plugin_dir_url( __DIR__ ),
+            'nonce' => wp_create_nonce( 'wp_rest' ),
+            'current_user_login' => wp_get_current_user()->user_login,
+            'current_user_id' => get_current_user_id()
             ]
         );
     }
@@ -94,5 +95,49 @@ abstract class DT_Metrics_Chart_Base
             }
         }
         return $pass;
+    }
+
+    public function my_list() {
+        $list = Disciple_Tools_Posts::search_viewable_post( 'contacts', [ "assigned_to" => [ "shared", "me" ] ] );
+        if ( is_wp_error( $list ) ) {
+            return [];
+        }
+        $my_list = [];
+        foreach ( $list['posts'] as $post ) {
+            $my_list[] = $post->ID;
+        }
+        return $my_list;
+    }
+
+    public function my_groups_list() {
+        $list = Disciple_Tools_Posts::search_viewable_post( 'groups', [ "assigned_to" => [ "shared", "me" ] ] );
+        if ( is_wp_error( $list ) ) {
+            return [];
+        }
+        $my_list = [];
+        foreach ( $list['posts'] as $post ) {
+            $my_list[] = $post->ID;
+        }
+        return $my_list;
+    }
+
+    public function _empty_geojson() {
+        return array(
+        'type' => 'FeatureCollection',
+        'features' => []
+        );
+    }
+
+    public function _no_results() {
+        return '<p>'. esc_attr__( 'No Results', 'disciple_tools' ) .'</p>';
+    }
+    public function _circular_structure_error( $wp_error) {
+        $link = false;
+        $data = $wp_error->get_error_data();
+
+        if ( isset( $data["record"] ) ){
+            $link = "<a target='_blank' href=" . get_permalink( $data["record"] ) . ">Open record</a>";
+        }
+        return '<p>' . esc_html( $wp_error->get_error_message() ) . ' ' . $link . '</p>';
     }
 }
