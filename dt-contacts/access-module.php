@@ -367,6 +367,11 @@ class DT_Contacts_Access extends DT_Module_Base {
             $namespace, '/contacts/(?P<id>\d+)/accept', [
                 "methods"  => "POST",
                 "callback" => [ $this, 'accept_contact' ],
+                "permission_callback" => function( WP_REST_Request $request ) {
+                    $params = $request->get_params();
+                    $contact_id = $params['id'];
+                    return DT_Posts::can_update( 'contacts', $contact_id );
+                }
             ]
         );
     }

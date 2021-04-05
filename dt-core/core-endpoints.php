@@ -28,20 +28,34 @@ class Disciple_Tools_Core_Endpoints {
         register_rest_route(
             $this->namespace, '/settings', [
                 'methods'  => "GET",
-                'callback' => [ $this, 'get_settings' ]
+                'callback' => [ $this, 'get_settings' ],
+                "permission_callback" => function() {
+                    $user = wp_get_current_user();
+                    if ( $user ) {
+                        return true;
+                    }
+                }
             ]
         );
         register_rest_route(
             $this->public_namespace, '/settings', [
                 'methods'  => "GET",
-                'callback' => [ $this, 'get_public_settings' ]
+                'callback' => [ $this, 'get_public_settings' ],
+                'permission_callback' => '__return_true'
             ]
         );
 
         register_rest_route(
             $this->namespace, '/activity', [
                 'methods'  => WP_REST_Server::CREATABLE,
-                'callback' => [ $this, 'log_activity' ]
+                'callback' => [ $this, 'log_activity' ],
+                'permission_callback' => function( WP_REST_Request $request ) {
+                    $params = $request->get_params();
+                    $user = wp_get_current_user();
+                    if ( isset( $params['user_id'] ) && $params['user_id'] == $user->ID ) {
+                        return true;
+                    }
+                },
             ]
         );
     }
