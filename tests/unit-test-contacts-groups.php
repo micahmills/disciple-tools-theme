@@ -202,12 +202,17 @@ class PostsTest extends WP_UnitTestCase {
                         "date" => "2018-01-01"
                     ]
                 ]
-            ]
+            ],
+            "private_text" => 'private user1m text'
         ] );
         $this->assertNotWPError( $contact1 );
         $this->assertArrayHasKey( 'tasks', $contact1 );
         $this->assertCount( 1, $contact1['tasks'] );
         $this->assertSame( "hello", $contact1["tasks"][0]["value"] );
+
+        $this->assertArrayHasKey( 'private_text', $contact1 );
+        $this->assertCount( 1, $contact1['private_text'] );
+        $this->assertSame( "private user1m text", $contact1["private_text"] );
 
         $task_id = $contact1["tasks"][0]["id"];
         $contact = DT_Posts::update_post( "contacts", $contact1["ID"], [
