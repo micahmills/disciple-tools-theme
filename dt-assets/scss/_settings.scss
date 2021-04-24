@@ -153,8 +153,8 @@ $code-font-weight: $global-weight-normal;
 $code-background: $light-gray;
 $code-border: 1px solid $medium-gray;
 $code-padding: rem-calc(2 5 1);
-$anchor-color: $primary-color;
-$anchor-color-hover: scale-color($anchor-color, $lightness: -14%);
+$anchor-color: var(--mainColor, $primary-color);
+$anchor-color-hover: var(--mainColor-Darkest, scale-color($praimary-color, $lightness: -15%));
 $anchor-text-decoration: none;
 $anchor-text-decoration-hover: none;
 $hr-width: 100%;
@@ -211,7 +211,7 @@ $input-error-font-weight: $global-weight-bold;
 $accordion-background: $white;
 $accordion-plusminus: true;
 $accordion-title-font-size: rem-calc(12);
-$accordion-item-color: $primary-color;
+$accordion-item-color: var(--mainColor, $primary-color);
 $accordion-item-background-hover: $light-gray;
 $accordion-item-padding: 1.25rem 1rem;
 $accordion-content-background: $white;
@@ -223,13 +223,13 @@ $accordion-content-padding: 1rem;
 // -----------------
 
 $accordionmenu-arrows: true;
-$accordionmenu-arrow-color: $primary-color;
+$accordionmenu-arrow-color: var(--mainColor, $primary-color);
 $accordionmenu-arrow-size: 6px;
 
 // 9. Badge
 // --------
 
-$badge-background: $primary-color;
+$badge-background: var(--mainColor, $primary-color);
 $badge-color: $white;
 $badge-color-alt: $black;
 $badge-palette: $foundation-palette;
@@ -242,7 +242,7 @@ $badge-font-size: 0.6rem;
 
 $breadcrumbs-margin: 0 0 $global-margin 0;
 $breadcrumbs-item-font-size: rem-calc(11);
-$breadcrumbs-item-color: $primary-color;
+$breadcrumbs-item-color: var(--mainColor, $primary-color);
 $breadcrumbs-item-color-current: $black;
 $breadcrumbs-item-color-disabled: $medium-gray;
 $breadcrumbs-item-margin: 0.75rem;
@@ -255,8 +255,8 @@ $breadcrumbs-item-slash: true;
 $button-padding: 0.85em 1em;
 $button-margin: 0 0 $global-margin 0;
 $button-fill: solid;
-$button-background: $primary-color;
-$button-background-hover: scale-color($button-background, $lightness: -15%);
+$button-background: var(--mainColor, $primary-color);
+$button-background-hover: var(--mainColor-Darkest, scale-color($praimary-color, $lightness: -15%));
 $button-color: $white;
 $button-color-alt: $black;
 $button-radius: 5px; //$global-radius;
@@ -331,7 +331,7 @@ $closebutton-color-hover: $black;
 
 $drilldown-transition: transform 0.15s linear;
 $drilldown-arrows: true;
-$drilldown-arrow-color: $primary-color;
+$drilldown-arrow-color: var(--mainColor, $primary-color);
 $drilldown-arrow-size: 6px;
 $drilldown-background: $white;
 
@@ -403,7 +403,7 @@ $form-button-radius: $global-radius;
 // 20. Label
 // ---------
 
-$label-background: $primary-color;
+$label-background: var(--mainColor, $primary-color);
 $label-color: $white;
 $label-color-alt: $black;
 $label-palette: $foundation-palette;
@@ -488,7 +488,7 @@ $pagination-item-padding: rem-calc(3 10);
 $pagination-item-spacing: rem-calc(1);
 $pagination-radius: $global-radius;
 $pagination-item-background-hover: $light-gray;
-$pagination-item-background-current: $primary-color;
+$pagination-item-background-current: var(--mainColor, $primary-color);
 $pagination-item-color-current: $white;
 $pagination-item-color-disabled: $medium-gray;
 $pagination-ellipsis-color: $black;
@@ -502,7 +502,7 @@ $pagination-arrows: true;
 $progress-height: 1rem;
 $progress-background: $medium-gray;
 $progress-margin-bottom: $global-margin;
-$progress-meter-background: $primary-color;
+$progress-meter-background: var(--mainColor, $primary-color);
 $progress-radius: $global-radius;
 
 // 28. Responsive Embed
@@ -536,7 +536,7 @@ $slider-background: $light-gray;
 $slider-fill-background: $medium-gray;
 $slider-handle-height: 1.4rem;
 $slider-handle-width: 1.4rem;
-$slider-handle-background: $primary-color;
+$slider-handle-background: var(--mainColor, $primary-color);
 $slider-opacity-disabled: 0.25;
 $slider-radius: $global-radius;
 
@@ -544,7 +544,7 @@ $slider-radius: $global-radius;
 // ----------
 
 $switch-background: $medium-gray;
-$switch-background-active: $primary-color;
+$switch-background-active: var(--mainColor, $primary-color);
 $switch-height: 2rem;
 $switch-height-tiny: 1.5rem;
 $switch-height-small: 1.75rem;
@@ -582,8 +582,8 @@ $show-header-for-stacked: false;
 
 $tab-margin: 0;
 $tab-background: $white;
-$tab-color: $primary-color;
-$tab-background-active: $primary-color;
+$tab-color: var(--mainColor, $primary-color);
+$tab-background-active: var(--mainColor, $primary-color);
 $tab-active-color: $white;
 $tab-item-font-size: rem-calc(14);
 $tab-item-background-hover: $white;
@@ -607,7 +607,7 @@ $thumbnail-radius: 0; //$global-radius;
 // 35. Title Bar
 // -------------
 
-$titlebar-background: $primary-color;
+$titlebar-background: var(--mainColor, $primary-color);
 $titlebar-color: $white;
 $titlebar-padding: 0.5rem;
 $titlebar-text-font-weight: bold;

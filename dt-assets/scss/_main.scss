@@ -4,6 +4,19 @@ Stylesheet: Main Stylesheet
 
 *************************************************/
 /*********************
+THEMING VARIABLES
+*********************/
+:root {
+    --mainColor: #{$primary-color};
+    --mainColor-Darker: scale-color($primary-color, $lightness: -8%)
+    --mainColor-Darkest: scale-color($primary-color, $lightness: -15%)
+
+    --primary-color2: #4caf50;
+    --primary-color2-Darker: darken(#4caf50, 5%);
+    --primary-color2-Darkest: darken(#4caf50, 10%);
+  }
+
+/*********************
 GENERAL STYLES
 *********************/
 .grey {
@@ -24,7 +37,7 @@ color:$light-gray;
 }
 
 .primary-color {
-    color: $primary-color;
+    color: var(--mainColor, $primary-color);
 }
 
 .padding-bottom {
@@ -96,10 +109,10 @@ NAVIGATION STYLES
     //.title-area {
     //    z-index: 1;
     //}
-    background-color: $primary-color;
+    background-color: var(--mainColor, $primary-color);
 
     ul {
-        background-color: $primary-color;
+        background-color: var(--mainColor, $primary-color);
     }
 
     a {
@@ -108,7 +121,7 @@ NAVIGATION STYLES
 
     .active {
         a {
-            background: #224f72;
+            background: var( --mainColor-Darkest, #224f72);
             //color: $black;
         }
     }
@@ -125,10 +138,10 @@ NAVIGATION STYLES
 
     .dropdown.menu {
         a {
-          background-color: $primary-color;
+          background-color: var(--mainColor, $primary-color);
         }
         li.active > a {
-            background: #005a87;
+            background: var(--mainColor-Darker, #005a87);
         }
     }
     .top-bar-left {
@@ -190,7 +203,7 @@ NAVIGATION STYLES
     margin-left:10px;
 }
 .add-new-items-dropdown {
-    background-color: #3f729b;
+    background-color: var(--mainColor, #3f729b);
     text-align: left;
     a {
         vertical-align: middle;
@@ -266,7 +279,7 @@ nav.second-bar {
 }
 
 .search-input__clear-button {
-    color: #3f729b;
+    color: var(--mainColor, $primary-color);
     font-weight: bold;
     border: 1px solid #cacaca;
     border-left: unset;
@@ -284,7 +297,7 @@ nav.second-bar {
 
 .text-input-wrapper {
     display: inline-flex;
-    width: 200px;    
+    width: 200px;
 
     input {
         padding: 0;
@@ -320,7 +333,7 @@ html[dir='rtl'] nav.second-bar .advanced_search {
     // transition: all .2s;
     border-top: none;
     &.is-stuck {
-        border-top: .5rem solid $primary-color;
+        border-top: .5rem solid var(--mainColor, $primary-color);
         .mobile-nav-actions {
             display: none;
         }
@@ -503,7 +516,7 @@ img {
 Title for boxed section
  */
 .section-header {
-    color: #3F729B;
+    color: var(--mainColor, $primary-color);
     font-size: 1.5rem;
 }
 
@@ -518,18 +531,18 @@ Title for boxed section
 JQUERY OVERRIDES
 *********************/
 .ui-state-active {
-    background: $primary-color;
-    border-color: $primary-color;
+    background: var(--mainColor, $primary-color);
+    border-color: var(--mainColor, $primary-color);
 }
 
 .ui-button.ui-state-active:hover {
-    background: $primary-color;
-    border-color: $primary-color;
+    background: var(--mainColor, $primary-color);
+    border-color: var(--mainColor, $primary-color);
 }
 
 .ui-button:active {
-    background: $primary-color;
-    border-color: $primary-color;
+    background: var(--mainColor, $primary-color);
+    border-color: var(--mainColor, $primary-color);
 }
 /**
 Loader
@@ -718,7 +731,7 @@ button.loader {
     .typeahead-user-row {
         img {
             width: 20px;
-            background-color: #3f729b;
+            background-color: var(--mainColor, $primary-color);
             border-radius: 3px;
             vertical-align: text-bottom;
             padding: 1px;
@@ -870,7 +883,7 @@ a.dt-green:hover {
     }
 
     .notification-group-header {
-        background-color: #3f729b;
+        background-color: var(--mainColor, #3f729b);
         color: white;
         font-weight: 600;
         padding: 0.7rem
@@ -1165,7 +1178,7 @@ label.dt-switch:after {
 }
 
 input.dt-switch:checked + label {
-    background: #3f729b;
+    background: var(--mainColor, $primary-color);
 }
 
 input.dt-switch:checked + label:after {
@@ -1274,7 +1287,7 @@ img.dt-blue-icon {
             margin-bottom: 0;
         }
         .type-option-title {
-            color:#3f729b;
+            color: var(--mainColor, $primary-color);
             font-size: larger;
         }
 

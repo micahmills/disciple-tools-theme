@@ -136,12 +136,12 @@ DT comments and activity
 *********************/
 #comment-activity-section{
     .button.select-button:hover {
-        background-color: #3f729b;
+        background-color: var(--mainColor, #3f729b);
     }
     .selected-select-button {
-        background-color: #3f729b;
+        background-color: var(--mainColor, #3f729b);
         :focus {
-            background-color: #3f729b;
+            background-color: var(--mainColor, #3f729b);
         }
     }
     li {
@@ -154,7 +154,7 @@ DT comments and activity
             margin: 0;
         }
         button {
-            color: #3f729b;
+            color: var(--mainColor, $primary-color);
             font-size: 12px;
         }
     }
@@ -259,11 +259,11 @@ DT comments and activity
         }
 
         &[data-own-reaction="true"] {
-            border-color: #3f729b;
+            border-color: var(--mainColor, $primary-color);
             background-color: #def1ff;
 
             &:hover {
-                border-color: #3f729b;
+                border-color: var(--mainColor, $primary-color);
             }
         }
 
@@ -521,7 +521,7 @@ Groups
 .group-progress-button {
     text-align:center;
     padding:10px;
-    background-color:$primary-color;
+    background-color:var(--mainColor, $primary-color);
     border-radius:5px;
     height:60px;
     width:65px;
@@ -583,7 +583,7 @@ Groups
 }
 
 .accept-contact .bordered-box{
-    background-color: #3F729B;
+    background-color: var(--mainColor, #3f729b);
     .accept-button {
         background-color: #4CAF50;
     }
@@ -662,7 +662,7 @@ select.color-select {
 #tasks-modal {
   .existing-task-action {
     font-size: 10px;
-    color: $primary-color;
+    color: var(--mainColor, $primary-color);
     margin: 0 5px;
   }
 }

@@ -72,10 +72,10 @@
 #list-filter-tabs {
     margin-top: 10px;
     .is-active a {
-        background-color: #3f729b;
+        background-color: var(--mainColor, #3f729b);
         color:white;
         &:focus {
-            background-color: #3f729b;
+            background-color: var(--mainColor, #3f729b);
             color: white;
         }
     }
@@ -148,7 +148,7 @@ table.js-list{
     }
     .vertical.tabs {
         border:none;
-        background-color: #3F729B;
+        background-color: var(--mainColor, #3f729b);
         .tabs-title>a {
             color: white;
         }
@@ -169,7 +169,7 @@ table.js-list{
         min-height:400px;
     }
     .filter-modal-left {
-        background-color: #3F729B;
+        background-color: var(--mainColor, #3f729b);
     }
     .filter-modal-right {
         background-color: #F2F2F2;
