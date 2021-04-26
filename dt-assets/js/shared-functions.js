@@ -635,6 +635,34 @@ window.METRICS = {
   },
 };
 
+function switchTheme(theme) {
+  var newTheme_primary = getComputedStyle(document.documentElement)
+  .getPropertyValue(`--${theme}-mainColor`);
+  var newTheme_primaryDarker = getComputedStyle(document.documentElement)
+  .getPropertyValue(`--${theme}-mainColor-Darker`);
+  var newTheme_primaryDarkest = getComputedStyle(document.documentElement)
+    .getPropertyValue(`--${theme}-mainColor-Darkest`);
+  var newTheme_primaryLighter = getComputedStyle(document.documentElement)
+    .getPropertyValue(`--${theme}-mainColor-Lighter`);
+    var newTheme_primaryLightest = getComputedStyle(document.documentElement)
+    .getPropertyValue(`--${theme}-mainColor-Lightest`);
+  var newTheme_secondary = getComputedStyle(document.documentElement)
+    .getPropertyValue(`--${theme}-secondaryColor`);
+  var newTheme_secondaryDarker = getComputedStyle(document.documentElement)
+    .getPropertyValue(`--${theme}-secondaryColor-Darker`);
+  var newTheme_background = getComputedStyle(document.documentElement)
+    .getPropertyValue(`--${theme}-backgroundColor`);
+
+  document.documentElement.style.setProperty(`--mainColor`, newTheme_primary);
+  document.documentElement.style.setProperty(`--mainColor-Darker`, newTheme_primaryDarker);
+  document.documentElement.style.setProperty(`--mainColor-Darkest`, newTheme_primaryDarkest);
+  document.documentElement.style.setProperty(`--mainColor-Lighter`, newTheme_primaryLighter);
+  document.documentElement.style.setProperty(`--mainColor-Lightest`, newTheme_primaryLightest);
+  document.documentElement.style.setProperty(`--secondaryColor`, newTheme_secondary);
+  document.documentElement.style.setProperty(`--secondaryColor-Darker`, newTheme_secondaryDarker);
+  document.documentElement.style.setProperty(`--backgroundColor`, newTheme_background);
+}
+
 // nonce timeout fix
 // every 5 minutes will check if nonce timed out
 // if it did then it will redirect to login
