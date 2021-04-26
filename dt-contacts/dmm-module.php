@@ -465,8 +465,7 @@ class DT_Contacts_DMM  extends DT_Module_Base {
 
             <ul class="dropdown menu" data-dropdown-menu style="display: inline-block">
                 <li style="border-radius: 5px">
-                    <a class="button menu-white-dropdown-arrow"
-                       style="background-color: #00897B; color: white;">
+                    <a class="button menu-white-dropdown-arrow">
                         <?php esc_html_e( "Quick Actions", 'disciple_tools' ) ?></a>
                     <ul class="menu is-dropdown-submenu" style="width: max-content">
                         <?php

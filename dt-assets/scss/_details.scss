@@ -636,7 +636,12 @@ select.color-select {
             display: none;
         }
     }
-
+    .show-details-section.show-all-toggle {
+        text-align: center;
+        background-color:var(--mainColor-Lightest, rgb(236, 245, 252));
+        margin: 3px -15px -15px -15px;
+        border-radius: 0 0 10px 10px;
+    }
 }
 
 //don't have typeaheads cover other elements

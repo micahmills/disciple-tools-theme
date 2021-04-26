@@ -50,8 +50,7 @@ function dt_print_details_bar(
                         <div class="cell grid-x shrink center-items">
                             <ul class="dropdown menu" data-dropdown-menu dropdownmenu-arrow-color="white">
                                 <li style="border-radius: 5px">
-                                    <a class="button menu-white-dropdown-arrow"
-                                       style="background-color: #00897B; color: white;">
+                                    <a class="button menu-white-dropdown-arrow">
                                         <?php esc_html_e( "Admin Actions", 'disciple_tools' ) ?></a>
                                     <ul class="menu is-dropdown-submenu">
                                         <?php if ( DT_Posts::can_delete( $dt_post_type, $post_id ) ) : ?>
