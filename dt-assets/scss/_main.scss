@@ -8,12 +8,23 @@ THEMING VARIABLES
 *********************/
 :root {
     --mainColor: #{$primary-color};
-    --mainColor-Darker: scale-color($primary-color, $lightness: -8%)
-    --mainColor-Darkest: scale-color($primary-color, $lightness: -15%)
+    --mainColor-Darker: #{scale-color($primary-color, $lightness: -8%)};
+    --mainColor-Darkest: #{scale-color($primary-color, $lightness: -15%)};
+    --mainColor-Lighter: #{scale-color($primary-color, $lightness: 19%, $saturation: 80%)};
+    --mainColor-Lightest: rgb(236, 245, 252);
+    --secondaryColor: #4caf50;
+    --secondaryColor-Darker: #00897B;
+    --backgroundColor: #e2e2e2;
 
-    --primary-color2: #4caf50;
-    --primary-color2-Darker: darken(#4caf50, 5%);
-    --primary-color2-Darkest: darken(#4caf50, 10%);
+
+    --Theme2-mainColor: #4caf50;
+    --Theme2-mainColor-Darker: #{darken(#4caf50, 5%)};
+    --Theme2-mainColor-Darkest: #{darken(#4caf50, 15%)};
+    --Theme2-mainColor-Lighter: #{scale-color(#4caf50, $lightness: 19%, $saturation: 80%)};
+    --Theme2-mainColor-Lightest: #F1F8F2; /**hsl(122,33%,96%)88**/
+    --Theme2-secondaryColor: #{$primary-color};
+    --Theme2-secondaryColor-Darker:#{scale-color($primary-color, $lightness: -15%)};
+    --Theme2-backgroundColor: #E1E5E1 /**hsla(122, 6% , 89%, 1) **/
   }
 
 /*********************
