@@ -57,7 +57,7 @@ color:$light-gray;
 }
 
 body {
-    background-color: #e2e2e2;
+    background-color: var(--backgroundColor, #e2e2e2);
 }
 
 footer {
@@ -87,6 +87,19 @@ footer {
 object {
     width: 100%;
     height: 100%;
+}
+
+.button {
+    background: var( --mainColor, $primary-color);
+    &:hover {
+        background: var( --mainColor-Darkest, #{scale-color($primary-color, $lightness: -15%)})
+    }
+    &.clear {
+        color: var( --mainColor, $primary-color);
+        &:hover {
+            color: var( --mainColor-Darkest, #{scale-color($primary-color, $lightness: -15%)})
+        }
+    }
 }
 /*********************
 LINK STYLES
@@ -146,7 +159,7 @@ NAVIGATION STYLES
     }
     .top-bar-left {
         .dropdown.menu a:hover {
-            background-color: #224f72
+            background-color: var(--mainColor-Darkest, #005a87)
         }
         //make dropdown caret white
         .dropdown.menu>li.is-dropdown-submenu-parent>a:after {
@@ -154,7 +167,7 @@ NAVIGATION STYLES
         }
     }
     .dropdown.menu .is-submenu-item a:hover {
-        background-color: #224f72
+        background-color: var(--mainColor-Darkest, #224f72)
     }
 
     a {
@@ -829,7 +842,7 @@ html[dir='rtl'] {
 
 .dt-green,
 a.dt-green:hover {
-    background-color: #4CAF50;
+    background-color: var( --secondaryColor, #4CAF50);
 }
 //
 .dt_tooltip {
@@ -999,8 +1012,12 @@ div.help-more h5 {
     font-size: 1rem;
 }
 
-.dropdown.menu > li.is-dropdown-submenu-parent > a.menu-white-dropdown-arrow:after {
-    border-color: #FFF transparent transparent;
+.dropdown.menu > li.is-dropdown-submenu-parent > a.menu-white-dropdown-arrow {
+    background-color: var(--secondaryColor-Darker, #00897B);
+    color: white;
+    &:after {
+        border-color: #FFF transparent transparent;
+    }
 }
 @media screen and (max-width : 640px) {
     table.js-list {

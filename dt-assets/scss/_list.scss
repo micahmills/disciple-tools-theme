@@ -1,7 +1,7 @@
 
 .filter {
-    border-top: 1px #E2E2E2 solid;
-    border-bottom: 1px #E2E2E2 solid;
+    border-top: 1px var(--backgroundColor, #e2e2e2) solid;
+    border-bottom: 1px var(--backgroundColor, #e2e2e2) solid;
     padding: 0 $bordered-box-padding 10px $bordered-box-padding;
     margin: 0 (-1 * $bordered-box-padding);
     width: calc(100% + 2 * #{$bordered-box-padding});
@@ -12,7 +12,7 @@
 }
 
 .filter__title:hover {
-    color: #2196f3;
+    color: var( --mainColor--lighter, #{scale-color($primary-color, $lightness: 19%, $saturation: 80%)} );
 }
 
 .filter__title:before {
@@ -38,7 +38,7 @@
 }
 
 .filter label:hover, .list-views label:hover {
-    color: #2196f3;
+    color: var( --mainColor-Lighter, #{scale-color($primary-color, $lightness: 19%, $saturation: 80%)});
 }
 
 .list-views {
@@ -153,10 +153,10 @@ table.js-list{
             color: white;
         }
         .tabs-title>a:hover {
-            background-color: #224F72;
+            background-color: var(--mainColor-Darkest, #224f72)
         }
         .tabs-title>a:focus, .tabs-title>a[aria-selected=true] {
-            background-color: #224F72;
+            background-color: var(--mainColor-Darkest, #224f72);
             color: white;
         }
         max-height: 500px;

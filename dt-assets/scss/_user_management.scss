@@ -27,7 +27,7 @@
 }
 
 #user_modal {
-    background-color: #e2e2e2;
+    background-color: var(--backgroundColor, #e2e2e2);
     max-width: 100%;
 }
 
