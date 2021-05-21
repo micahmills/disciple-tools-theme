@@ -92,12 +92,12 @@ function dt_print_details_bar(
                             <span id="title" contenteditable="true" class="title dt_contenteditable"><?php the_title_attribute(); ?></span>
                             <br>
                             <?php do_action( 'dt_post_record_name_tagline' ); ?>
-                            <span style="font-size: 10px; display: inline-block; ">
+                            <span class="record-name-tagline">
                             <?php if ( isset( $dt_post["type"]["label"] ) ) : ?>
-                                <a data-open="contact-type-modal" style="font-size: 10px"><?php echo esc_html( $dt_post["type"]["label"] ?? "" )?> <?php esc_html_e( 'Record', 'disciple_tools' ); ?></a>
+                                <a data-open="contact-type-modal"><?php echo esc_html( $dt_post["type"]["label"] ?? "" )?> <?php esc_html_e( 'Record', 'disciple_tools' ); ?></a>
                             <?php endif; ?>
-                                <?php echo esc_html( sprintf( _x( 'Created on %s', 'Created on the 21st of August', 'disciple_tools' ), $dt_post["post_date"]["formatted"] ) );
-                                if ( $dt_post["post_author_display_name"] ):
+                                <span class="details-bar-created-on"></span>
+                                <?php if ( $dt_post["post_author_display_name"] ):
                                     echo esc_html( ' ' . sprintf( _x( 'by %s', '(record created) by multiplier1', 'disciple_tools' ), $dt_post["post_author_display_name"] ) );
                                 endif; ?>
                             </span>
@@ -115,6 +115,13 @@ function dt_print_details_bar(
                         </div>
                     </div>
                     <div class="cell small-5 large-4 align-right grid-x">
+                        <div class="cell shrink center-items">
+                            <button class="button favorite" data-favorite="false">
+                                <svg class='icon-star' viewBox="0 0 32 32">
+                                    <use xlink:href="<?php echo esc_url( get_template_directory_uri() . "/dt-assets/images/star.svg#star" ) ?>"></use>
+                                </svg>
+                            </button>
+                        </div>
                         <?php if ( $task ) : ?>
                         <div class="cell shrink center-items">
                             <button class="button open-set-task">
@@ -169,6 +176,12 @@ function dt_print_details_bar(
                         </a>
                     </button>
                 </div>
+                <button class="button favorite" data-favorite="false">
+                <svg class='icon-star' viewBox="0 0 32 32">
+                    <use xlink:href="<?php echo esc_url( get_template_directory_uri() . "/dt-assets/images/star.svg#star" ) ?>"></use>
+                </svg>
+                </object>
+                </button>
                 <?php endif; ?>
                 <?php if ( $share_button ): ?>
                     <div class="cell shrink">
@@ -209,6 +222,7 @@ function dt_print_details_bar(
                     <?php } ?>
                 </div>
             </div>
+
             <div class="grid-x">
                 <div class="cell small-1 center-items">
                     <a class="section-chevron navigation-previous" style="display: none;" href="javascript:void(0)">
@@ -232,12 +246,12 @@ function dt_print_details_bar(
                     <span id="title" contenteditable="true" class="title dt_contenteditable"><?php the_title_attribute(); ?></span>
                     <div id="record-tagline">
                         <?php do_action( 'dt_post_record_name_tagline' ); ?>
-                        <span style="font-size: 10px; display: inline-block; ">
+                        <span class="record-name-tagline">
                         <?php if ( isset( $dt_post["type"]["label"] ) ) : ?>
-                            <a data-open="contact-type-modal" style="font-size: 10px"><?php echo esc_html( $dt_post["type"]["label"] ?? "" )?> <?php esc_html_e( 'Record', 'disciple_tools' ); ?></a>
+                            <a data-open="contact-type-modal"><?php echo esc_html( $dt_post["type"]["label"] ?? "" )?> <?php esc_html_e( 'Record', 'disciple_tools' ); ?></a>
                         <?php endif; ?>
-                            <?php echo esc_html( sprintf( _x( 'Created on %s', 'Created on the 21st of August', 'disciple_tools' ), $dt_post["post_date"]["formatted"] ) );
-                            if ( $dt_post["post_author_display_name"] ):
+                        <span class="details-bar-created-on"></span>
+                            <?php if ( $dt_post["post_author_display_name"] ):
                                 echo esc_html( ' ' . sprintf( _x( 'by %s', '(record created) by multiplier1', 'disciple_tools' ), $dt_post["post_author_display_name"] ) );
                             endif; ?>
                         </span>

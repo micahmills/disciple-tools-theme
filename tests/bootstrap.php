@@ -2,7 +2,7 @@
 /**
  * PHPUnit bootstrap file
  *
- * @package Disciple_Tools_Theme
+ * @package Disciple.Tools
  */
 
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
@@ -12,7 +12,7 @@ if ( !$_tests_dir ) {
 }
 
 if ( !file_exists( $_tests_dir . '/includes/functions.php' ) ) {
-    echo "Could not find " .  $_tests_dir  . " /includes/functions.php, have you run tests/install-wp-tests.sh ?" . PHP_EOL; //@phpcs:ignore
+    echo "Could not find " .  $_tests_dir  . "/includes/functions.php, have you run tests/install-wp-tests.sh ?" . PHP_EOL; //@phpcs:ignore
     exit( 1 );
 }
 

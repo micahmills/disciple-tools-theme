@@ -239,6 +239,7 @@ function dt_site_scripts() {
                     'dismissed_duplicates' => __( "Dismissed Duplicates", 'disciple_tools' ),
                     'duplicates_on' => __( "Duplicates on: %s", 'disciple_tools' ),
                     'transfer_error' => __( 'Transfer failed. Check site-to-site configuration.', 'disciple_tools' ),
+                    'created_on' => _x( 'Created on %s', 'Created on the 21st of August', 'disciple_tools' ),
                 ]
             ]);
 
@@ -279,6 +280,7 @@ function dt_site_scripts() {
                     'responsible_for_locations' => __( "Locations you are responsible for", 'disciple_tools' ),
                     'add' => __( 'Add', 'disciple_tools' ),
                     'save' => __( 'Save', 'disciple_tools' ),
+                    'link' => __( 'link', 'disciple_tools' ),
                 ] ),
                 'google_translate_api_key' => get_option( 'dt_googletranslate_api_key' ),
                 'custom_data'           => apply_filters( 'dt_settings_js_data', [] ), // nest associated array
@@ -302,8 +304,10 @@ function dt_site_scripts() {
         );
     }
 
+    $is_new_post = strpos( $url_path, "/new" ) !== false && in_array( str_replace( "/new", "", $url_path ), $post_types );
+
     //list page
-    if ( !get_post_type() && in_array( $post_type, $post_types ) ){
+    if ( !get_post_type() && in_array( $post_type, $post_types ) && !$is_new_post ){
 
         $post_settings = DT_Posts::get_post_settings( $post_type );
         $translations = [
@@ -318,7 +322,8 @@ function dt_site_scripts() {
             'empty_list' => __( 'No records found matching your filter.', 'disciple_tools' ),
             'filter_all' => sprintf( _x( "All %s", 'All records', 'disciple_tools' ), $post_settings["label_plural"] ),
             'range_start' => __( 'start', 'disciple_tools' ),
-            'range_end' => __( 'end', 'disciple_tools' )
+            'range_end' => __( 'end', 'disciple_tools' ),
+            'all' => __( 'All', 'disciple_tools' ),
         ];
         dt_theme_enqueue_script( 'drag-n-drop-table-columns', 'dt-core/dependencies/drag-n-drop-table-columns.js', array( 'jquery' ), true );
         dt_theme_enqueue_script( 'modular-list-js', 'dt-assets/js/modular-list.js', array( 'jquery', 'lodash', 'shared-functions', 'typeahead-jquery', 'site-js', 'drag-n-drop-table-columns' ), true );
@@ -335,7 +340,7 @@ function dt_site_scripts() {
         }
     }
 
-    if ( strpos( $url_path, "/new" ) !== false && in_array( str_replace( "/new", "", $url_path ), $post_types ) ){
+    if ($is_new_post){
         $post_settings = DT_Posts::get_post_settings( $post_type );
         $dependencies = [ 'jquery', 'lodash', 'shared-functions', 'typeahead-jquery' ];
         if ( DT_Mapbox_API::get_key() ){
@@ -350,6 +355,12 @@ function dt_site_scripts() {
             'post_type_settings' => $post_settings
         ) );
     }
+
+    dt_theme_enqueue_script( 'dt-advanced-search', 'dt-assets/js/advanced-search.js', array( 'jquery' ) );
+    wp_localize_script( 'dt-advanced-search', 'advanced_search_settings', array(
+        'template_dir_uri' => esc_html( get_template_directory_uri() ),
+        'fetch_more_text' => __( 'load more', 'disciple_tools' ) // Support translations
+    ) );
 }
 add_action( 'wp_enqueue_scripts', 'dt_site_scripts', 999 );
 

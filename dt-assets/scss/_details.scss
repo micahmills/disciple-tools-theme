@@ -681,4 +681,16 @@ select.color-select {
     .title {
         font-size: 15px
     }
+    .record-name-tagline {
+        font-size: 10px;
+        display: inline-block;
+        span, a {
+            font-size: 10px;
+        }
+    }
+}
+
+//user select field
+.dt_user_select {
+    margin-bottom:15px;
 }

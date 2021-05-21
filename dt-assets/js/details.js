@@ -14,6 +14,13 @@ jQuery(document).ready(function($) {
 
   window.masonGrid = $('.grid') // responsible for resizing and moving the tiles
 
+  const detailsBarCreatedOnElements = document.querySelectorAll('.details-bar-created-on')
+  detailsBarCreatedOnElements.forEach((element) => {
+    const postDate = post.post_date.timestamp
+    const formattedDate = window.SHAREDFUNCTIONS.formatDate(postDate)
+    element.innerHTML = window.lodash.escape( window.detailsSettings.translations.created_on.replace('%s', formattedDate) )
+  })
+
   $('input.text-input').change(function(){
     const id = $(this).attr('id')
     const val = $(this).val()
@@ -261,6 +268,66 @@ jQuery(document).ready(function($) {
       if ( Typeahead[`.js-typeahead-${field_key}`]){
         Typeahead[`.js-typeahead-${field_key}`].adjustInputSize()
       }
+    })
+  })
+
+  /**
+   * user select typeahead
+   */
+  $('.dt_user_select').each((key, el)=>{
+    let field_key = $(el).attr('id')
+    let user_input = $(`.js-typeahead-${field_key}`)
+    $.typeahead({
+      input: `.js-typeahead-${field_key}`,
+      minLength: 0,
+      maxItem: 0,
+      accent: true,
+      searchOnFocus: true,
+      source: TYPEAHEADS.typeaheadUserSource(),
+      templateValue: "{{name}}",
+      template: function (query, item) {
+        return `<div class="assigned-to-row" dir="auto">
+          <span>
+              <span class="avatar"><img style="vertical-align: text-bottom" src="{{avatar}}"/></span>
+              ${window.lodash.escape( item.name )}
+          </span>
+          ${ item.status_color ? `<span class="status-square" style="background-color: ${window.lodash.escape(item.status_color)};">&nbsp;</span>` : '' }
+          ${ item.update_needed && item.update_needed > 0 ? `<span>
+            <img style="height: 12px;" src="${window.lodash.escape( window.wpApiShare.template_dir )}/dt-assets/images/broken.svg"/>
+            <span style="font-size: 14px">${window.lodash.escape(item.update_needed)}</span>
+          </span>` : '' }
+        </div>`
+      },
+      dynamic: true,
+      hint: true,
+      emptyTemplate: window.lodash.escape(window.wpApiShare.translations.no_records_found),
+      callback: {
+        onClick: function(node, a, item){
+          API.update_post('contacts', post_id, {[field_key]: 'user-' + item.ID}).then(function (response) {
+            window.lodash.set(post, field_key, response[field_key])
+            setStatus(response)
+            user_input.val(post.assigned_to.display)
+            user_input.blur()
+          }).catch(err => { console.error(err) })
+        },
+        onResult: function (node, query, result, resultCount) {
+          let text = TYPEAHEADS.typeaheadHelpText(resultCount, query, result)
+          $(`#${field_key}-result-container`).html(text);
+        },
+        onHideLayout: function () {
+          $(`.${field_key}-result-container`).html("");
+        },
+        onReady: function () {
+          if (window.lodash.get(post,  `${field_key}.display`)){
+            $(`.js-typeahead-${field_key}`).val(post[field_key].display)
+          }
+        }
+      },
+    });
+    $(`.search_${field_key}`).on('click', function () {
+      user_input.val("")
+      user_input.trigger('input.typeahead')
+      user_input.focus()
     })
   })
 
@@ -722,13 +789,48 @@ jQuery(document).ready(function($) {
     })
   })
 
+  /**
+   * Favorite
+   */
+  function favorite_check(post_data) {
+    if (post_data.favorite) {
+      document.querySelectorAll('.button.favorite').forEach( function(button) {
+          button.dataset.favorite = true
+      })
+      $('.button.favorite').addClass('selected');
+    } else {
+      document.querySelectorAll('.button.favorite').forEach( function(button) {
+          button.dataset.favorite = false
+      })
+      $('.button.favorite').removeClass('selected');
+    }
+  }
+
+  favorite_check(window.detailsSettings.post_fields);
+
+  $('.button.favorite').on( "click", function () {
+    var favorited = this.dataset.favorite
+    var favoritedValue;
+    if (favorited == "true") {
+      this.dataset.favorite = false
+      favoritedValue = false;
+    } else if (favorited == "false") {
+      this.dataset.favorite = true
+      favoritedValue = true;
+    }
+    rest_api.update_post(post_type, post_id, {'favorite': favoritedValue}).then((new_post)=>{
+      favorite_check(new_post);
+    })
+  })
 
   /**
    * Tags
    */
-  if( $('.js-typeahead-tags').length ) {
+  $('.tags .typeahead__query input').each((key, input)=>{
+    let field = $(input).data('field') || 'tags'
+    let typeahead_name = `.js-typeahead-${field}`
     $.typeahead({
-      input: '.js-typeahead-tags',
+      input: typeahead_name,
       minLength: 0,
       maxItem: 20,
       searchOnFocus: true,
@@ -739,7 +841,7 @@ jQuery(document).ready(function($) {
             url: window.wpApiShare.root + `dt-posts/v2/${post_type}/multi-select-values`,
             data: {
               s: "{{query}}",
-              field: "tags"
+              field: field
             },
             beforeSend: function (xhr) {
               xhr.setRequestHeader('X-WP-Nonce', window.wpApiShare.nonce);
@@ -769,7 +871,7 @@ jQuery(document).ready(function($) {
         const tag = this.query
         const addTag = addTagOnClick.bind(this)
         button.on("click", function () {
-          addTag(tag)
+          addTag(field, tag)
         })
         liItem.append(button)
         return liItem
@@ -777,34 +879,36 @@ jQuery(document).ready(function($) {
       dynamic: true,
       multiselect: {
         matchOn: ["name"],
-        data: function () {
-          return (post.tags || []).map(t => {
+        data: function (){
+          return (post[field] || [] ).map(t=>{
             return {name: t}
           })
-        }, callback: {
-          onCancel: function (node, item) {
-            API.update_post(post_type, post_id, {'tags': {values: [{value: item.name, delete: true}]}})
-          }
         },
-        href: function (item) {
-          const postType = window.wpApiShare.post_type
-          const encodedFilterLabel = window.SHAREDFUNCTIONS.uriEncodeFilter('tags', item.name, `Tags: ${item.name}`)
-          return window.wpApiShare.site_url + `/${postType}?fieldQuery=${encodedFilterLabel}`
+        callback: {
+          onCancel: function (node, item, event) {
+            $(`#${field}-spinner`).addClass('active')
+            API.update_post(post_type, post_id, {[field]: {values:[{value:item.name, delete:true}]}}).then((new_post)=>{
+              $(`#${field}-spinner`).removeClass('active')
+              this.hideLayout();
+              this.resetInput();
+              $( document ).trigger( "dt_multi_select-updated", [ new_post, field ] );
+            }).catch(err => { console.error(err) })
+          }
         },
       },
       callback: {
         onClick: function (node, a, item, event) {
           event.preventDefault()
           const addTag = addTagOnClick.bind(this)
-          addTag(item.name)
+          addTag(field, item.name)
         },
         onResult: function (node, query, result, resultCount) {
           let text = TYPEAHEADS.typeaheadHelpText(resultCount, query, result)
-          $('#tags-result-container').html(text);
+          $(`#${field}-result-container`).html(text);
           masonGrid.masonry('layout')
         },
         onHideLayout: function () {
-          $('#tags-result-container').html("");
+          $(`#${field}-result-container`).html("");
           masonGrid.masonry('layout')
         },
         onShowLayout() {
@@ -812,21 +916,30 @@ jQuery(document).ready(function($) {
         }
       }
     });
-    $("#create-tag-return").on("click", function () {
-      let tag = $("#new-tag").val()
-      Typeahead['.js-typeahead-tags'].addMultiselectItemLayout({name: tag})
-      API.update_post(post_type, post_id, {tags: {values: [{value: tag}]}})
-    })
-  }
+  })
 
-  function addTagOnClick(tag) {
-    API.update_post(post_type, post_id, {tags: {values: [{value: tag}]}})
-    this.addMultiselectItemLayout({ name: tag})
-    this.hideLayout();
-    this.resetInput();
-    masonGrid.masonry('layout')
-  }
+  $(".create-new-tag").on("click", function () {
+    let field = $(this).data("field");
+    $("#create-tag-modal").data("field", field)
 
+  });
+  $("#create-tag-return").on("click", function () {
+    let field = $("#create-tag-modal").data("field");
+    let tag = $("#new-tag").val()
+    Typeahead['.js-typeahead-' + field].addMultiselectItemLayout({name: tag})
+    API.update_post(post_type, post_id, {[field]: {values: [{value: tag}]}})
+  })
+
+  function addTagOnClick(field, tag) {
+    $(`#${field}-spinner`).addClass('active')
+    API.update_post(post_type, post_id, {[field]: {values:[{"value":tag}]}}).then(new_post=>{
+      $(`#${field}-spinner`).removeClass('active')
+      this.addMultiselectItemLayout({name: tag})
+      this.hideLayout();
+      this.resetInput();
+      masonGrid.masonry('layout')
+    }).catch(err => { console.error(err) })
+  }
 
   let upgradeUrl = (url)=>{
     if ( !url.includes("http")){
@@ -845,7 +958,7 @@ jQuery(document).ready(function($) {
 
       if ( field_options.tile === 'details' && !field_options.hidden && post[field_key]){
 
-        if ( field_options.only_for_types && ( post["type"] && !field_options.only_for_types.includes(post["type"].key) ) ){
+        if ( field_options.only_for_types && ( field_options.only_for_types === true || field_options.only_for_types.length > 0 && ( post["type"] && !field_options.only_for_types.includes(post["type"].key) ) ) ){
           return
         }
         let field_value = window.lodash.get( post, field_key, false )

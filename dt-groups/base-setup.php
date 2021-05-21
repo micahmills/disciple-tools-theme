@@ -89,10 +89,9 @@ class DT_Groups_Base extends DT_Module_Base {
             $fields['tags'] = [
                 'name'        => __( 'Tags', 'disciple_tools' ),
                 'description' => _x( 'A useful way to group related items and can help group contacts associated with noteworthy characteristics. e.g. business owner, sports lover. The contacts can also be filtered using these tags.', 'Optional Documentation', 'disciple_tools' ),
-                'type'        => 'multi_select',
+                'type'        => 'tags',
                 'default'     => [],
                 'tile'        => 'other',
-                'custom_display' => true,
                 'icon' => get_template_directory_uri() . '/dt-assets/images/tag.svg'
             ];
             $fields["follow"] = [
@@ -116,34 +115,13 @@ class DT_Groups_Base extends DT_Module_Base {
             ];
             $fields['tasks'] = [
                 'name' => __( 'Tasks', 'disciple_tools' ),
-                'type' => 'post_user_meta',
+                'type' => 'task',
+                'private' => true
             ];
             $fields["duplicate_data"] = [
                 "name" => 'Duplicates', //system string does not need translation
                 'type' => 'array',
                 'default' => [],
-            ];
-            $fields['assigned_to'] = [
-                'name'        => __( 'Assigned To', 'disciple_tools' ),
-                'description' => __( "Select the main person who is responsible for reporting on this group.", 'disciple_tools' ),
-                'type'        => 'user_select',
-                'default'     => '',
-                'tile' => 'status',
-                'icon' => get_template_directory_uri() . '/dt-assets/images/assigned-to.svg',
-                "show_in_table" => 16,
-                'custom_display' => true,
-            ];
-            $fields["coaches"] = [
-                "name" => __( 'Group Coach / Church Planter', 'disciple_tools' ),
-                'description' => _x( 'The person who planted and/or is coaching this group. Only one person can be assigned to a group while multiple people can be coaches / church planters of this group.', 'Optional Documentation', 'disciple_tools' ),
-                "type" => "connection",
-                "post_type" => "contacts",
-                "p2p_direction" => "from",
-                "p2p_key" => "groups_to_coaches",
-                'tile' => 'status',
-                'custom_display' => true,
-                'icon' => get_template_directory_uri() . '/dt-assets/images/coach.svg',
-                'create-icon' => get_template_directory_uri() . '/dt-assets/images/add-contact.svg',
             ];
             $fields['group_status'] = [
                 'name'        => __( 'Group Status', 'disciple_tools' ),
@@ -162,11 +140,32 @@ class DT_Groups_Base extends DT_Module_Base {
                     ],
                 ],
                 'tile'     => 'status',
-                'custom_display' => true,
                 'icon' => get_template_directory_uri() . '/dt-assets/images/status.svg',
                 "default_color" => "#366184",
                 "show_in_table" => 10,
+                "select_cannot_be_empty" => true
             ];
+            $fields['assigned_to'] = [
+                'name'        => __( 'Assigned To', 'disciple_tools' ),
+                'description' => __( "Select the main person who is responsible for reporting on this group.", 'disciple_tools' ),
+                'type'        => 'user_select',
+                'default'     => '',
+                'tile' => 'status',
+                'icon' => get_template_directory_uri() . '/dt-assets/images/assigned-to.svg',
+                "show_in_table" => 16,
+            ];
+            $fields["coaches"] = [
+                "name" => __( 'Group Coach / Church Planter', 'disciple_tools' ),
+                'description' => _x( 'The person who planted and/or is coaching this group. Only one person can be assigned to a group while multiple people can be coaches / church planters of this group.', 'Optional Documentation', 'disciple_tools' ),
+                "type" => "connection",
+                "post_type" => "contacts",
+                "p2p_direction" => "from",
+                "p2p_key" => "groups_to_coaches",
+                'tile' => 'status',
+                'icon' => get_template_directory_uri() . '/dt-assets/images/coach.svg',
+                'create-icon' => get_template_directory_uri() . '/dt-assets/images/add-contact.svg',
+            ];
+
 
             $fields['group_type'] = [
                 'name'        => __( 'Group Type', 'disciple_tools' ),
@@ -195,6 +194,7 @@ class DT_Groups_Base extends DT_Module_Base {
                 'in_create_form' => true,
                 "show_in_table" => 15,
                 "icon" => get_template_directory_uri() . '/dt-assets/images/circle-square-triangle.svg',
+                "select_cannot_be_empty" => true
             ];
 
 
@@ -291,7 +291,7 @@ class DT_Groups_Base extends DT_Module_Base {
 
             $fields["member_count"] = [
                 'name' => __( 'Member Count', 'disciple_tools' ),
-                'description' => _x( 'The number of members in this group. It will automatically be updated when new members are added or removed in the member list. Change this number manually to included people who may not be in the system but are also members of the group.', 'Optional Documentation', 'disciple_tools' ),
+                'description' => _x( 'The number of members in this group. It will automatically be updated when new members are added or removed in the member list. Change this number manually to include people who may not be in the system but are also members of the group.', 'Optional Documentation', 'disciple_tools' ),
                 'type' => 'number',
                 'default' => '',
                 'tile' => 'relationships',
@@ -318,7 +318,6 @@ class DT_Groups_Base extends DT_Module_Base {
             ];
             $fields["leader_count"] = [
                 'name' => __( 'Leader Count', 'disciple_tools' ),
-                'description' => _x( 'The number of members in this group. It will automatically be updated when new members are added or removed in the member list. Change this number manually to included people who may not be in the system but are also members of the training.', 'Optional Documentation', 'disciple_tools' ),
                 'type' => 'number',
                 'default' => '',
                 'tile' => 'relationships',
@@ -448,8 +447,6 @@ class DT_Groups_Base extends DT_Module_Base {
                 'default' => ''
             ];
 
-
-
         }
 
         if ( $post_type === "contacts" ){
@@ -479,83 +476,6 @@ class DT_Groups_Base extends DT_Module_Base {
     }
 
     public function dt_details_additional_section( $section, $post_type ){
-        // Display 'Group Status' tile
-        if ( $post_type === "groups" && $section === "status" ){
-            $group = DT_Posts::get_post( $post_type, get_the_ID() );
-            $group_fields = DT_Posts::get_post_field_settings( $post_type );
-            ?>
-
-                <div class="cell small-12 medium-4">
-                    <?php $group_fields['group_status']["custom_display"] = false ?>
-                    <?php render_field_for_display( "group_status", $group_fields, $group, true ); ?>
-                </div>
-                <div class="cell small-12 medium-4">
-                    <div class="section-subheader">
-                        <img src="<?php echo esc_url( get_template_directory_uri() ) . '/dt-assets/images/assigned-to.svg' ?>">
-                        <?php echo esc_html( $group_fields["assigned_to"]["name"] )?>
-                        <button class="help-button" data-section="assigned-to-help-text">
-                            <img class="help-icon" src="<?php echo esc_html( get_template_directory_uri() . '/dt-assets/images/help.svg' ) ?>"/>
-                        </button>
-                    </div>
-
-                    <div class="assigned_to details">
-                        <var id="assigned_to-result-container" class="result-container assigned_to-result-container"></var>
-                        <div id="assigned_to_t" name="form-assigned_to" class="scrollable-typeahead">
-                            <div class="typeahead__container">
-                                <div class="typeahead__field">
-                                    <span class="typeahead__query">
-                                        <input class="js-typeahead-assigned_to input-height"
-                                               name="assigned_to[query]" placeholder="<?php echo esc_html_x( "Search Users", 'input field placeholder', 'disciple_tools' ) ?>"
-                                               autocomplete="off">
-                                    </span>
-                                    <span class="typeahead__button">
-                                        <button type="button" class="search_assigned_to typeahead__image_button input-height" data-id="assigned_to_t">
-                                            <img src="<?php echo esc_html( get_template_directory_uri() . '/dt-assets/images/chevron_down.svg' ) ?>"/>
-                                        </button>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="cell small-12 medium-4">
-                    <?php $group_fields['coaches']["custom_display"] = false ?>
-                    <?php render_field_for_display( "coaches", $group_fields, $group, true ); ?>
-                </div>
-        <?php }
-
-        // Display 'Other' tile
-        if ( $post_type === "groups" && $section === "other" ) :
-            $fields = DT_Posts::get_post_field_settings( $post_type );
-            ?>
-            <div class="section-subheader">
-                <img class="dt-icon" src="<?php echo esc_html( get_template_directory_uri() . '/dt-assets/images/tag.svg' ) ?>"/>
-                <?php echo esc_html( $fields["tags"]["name"] ) ?>
-            </div>
-            <div class="tags">
-                <var id="tags-result-container" class="result-container"></var>
-                <div id="tags_t" name="form-tags" class="scrollable-typeahead typeahead-margin-when-active">
-                    <div class="typeahead__container">
-                        <div class="typeahead__field">
-                            <span class="typeahead__query">
-                                <input class="js-typeahead-tags input-height"
-                                       name="tags[query]"
-                                       placeholder="<?php echo esc_html( sprintf( _x( "Search %s", "Search 'something'", 'disciple_tools' ), $fields["tags"]['name'] ) )?>"
-                                       autocomplete="off"
-                                       data-add-new-tag-text="<?php echo esc_html( __( 'Add new tag "%s"', 'disciple_tools' ) )?>"
-                                       data-tag-exists-text="<?php echo esc_html( __( 'Tag "%s" is already being used', 'disciple_tools' ) )?>">
-                            </span>
-                            <span class="typeahead__button">
-                                <button type="button" data-open="create-tag-modal" class="create-new-tag typeahead__image_button input-height">
-                                    <img src="<?php echo esc_html( get_template_directory_uri() . '/dt-assets/images/tag-add.svg' ) ?>"/>
-                                </button>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <?php endif;
-
         // Display 'Health Metrics' tile
         if ( $post_type === "groups" && $section === "health-metrics" ) {
             $group_preferences = dt_get_option( 'group_preferences' );
@@ -1110,6 +1030,7 @@ class DT_Groups_Base extends DT_Module_Base {
         if ( $post_type === 'groups' ){
             $counts = self::get_my_groups_status_type();
             $fields = DT_Posts::get_post_field_settings( $post_type );
+            $post_label_plural = DT_Posts::get_post_settings( $post_type )['label_plural'];
             /**
              * Setup my group filters
              */
@@ -1225,6 +1146,18 @@ class DT_Groups_Base extends DT_Module_Base {
                     'sort' => 'group_type'
                 ],
                 "count" => $total_all
+            ];
+            $filters["filters"][] = [
+                'ID' => 'favorite',
+                'tab' => 'all',
+                'name' => sprintf( _x( "Favorite %s", 'Favorite Contacts', 'disciple_tools' ), $post_label_plural ),
+                'query' => [
+                    "fields" => [ "favorite" => [ "1" ] ],
+                    'sort' => "name"
+                ],
+                'labels' => [
+                    [ "id" => "1", "name" => __( "Favorite", "disciple_tools" ) ]
+                ]
             ];
             $filters["filters"][] = [
                 'ID' => 'recent',

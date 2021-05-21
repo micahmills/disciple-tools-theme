@@ -19,6 +19,7 @@
   let current_user_id = wpApiNotifications.current_user_id;
   let mobile_breakpoint = 1024
   let clearSearchButton = $('.search-input__clear-button')
+  window.post_type_fields = list_settings.post_type_settings.fields
 
   let items = []
   try {
@@ -102,12 +103,12 @@
   /**
    * Looks for all query params called 'filter' (allows for multiple filters to be applied)
    * from url like base_url?filter=foo&filter=bar
-   * 
+   *
    * filter values are exected to be created by encodeURI(JSON.stringify({ id, name, field }))
-   * where the id, name and field are the relevant field and id to search for. (filters with 
+   * where the id, name and field are the relevant field and id to search for. (filters with
    * incorrect fields will be removed)
-   * 
-   * If any part of the filter doesn't decode or JSON.parse properly the function returns 
+   *
+   * If any part of the filter doesn't decode or JSON.parse properly the function returns
    * no filter.
    */
   function create_custom_filter_from_query_params() {
@@ -334,7 +335,11 @@
       } else if (  sortLabel.includes('post_date') ) {
         sortLabel = list_settings.translations.creation_date
       } else  {
-        sortLabel = window.lodash.get( list_settings, `post_type_settings.fields[${filter.query.sort}].name`, sortLabel)
+
+        // remove leading dash from sort filter key when reverse sorting
+        const leadingDashSearch = new RegExp('^-')
+        const querySortKey = (sortLabel.search(leadingDashSearch) > -1) ? sortLabel.replace(leadingDashSearch, '') : sortLabel
+        sortLabel = window.lodash.get( list_settings, `post_type_settings.fields[${querySortKey}].name`, sortLabel)
       }
       html += `<span class="current-filter" data-id="sort">
           ${window.lodash.escape( list_settings.translations.sorting_by )}: ${window.lodash.escape( sortLabel )}
@@ -455,7 +460,11 @@
               values = field_value.map(v => {
                 return `${window.lodash.escape(window.lodash.get(field_settings, `default[${v}].label`, v))}`;
               })
-            } else if ( field_settings.type === "location" ){
+            } else if (field_settings.type === 'tags') {
+              values = field_value.map(v => {
+                return `${window.lodash.escape(window.lodash.get(field_settings, `default[${v}].label`, v))}`;
+              })
+            } else if ( field_settings.type === "location" || field_settings.type === "location_meta" ){
               values = field_value.map(v => {
                 return `${window.lodash.escape( v.label )}`;
               })
@@ -468,16 +477,21 @@
                 return `${window.lodash.escape( v.post_title )}`;
               })
             } else if ( field_settings.type === "boolean" ){
-              values = ['&check;']
+              if (field_key === "favorite") {
+                values = [`<svg class='icon-star selected' viewBox="0 0 32 32" data-id=${record.ID}><use xlink:href="${window.wpApiShare.template_dir}/dt-assets/images/star.svg#star"></use></svg>`]
+              } else {
+                values = ['&check;']
+              }
             }
+          } else if ( !field_value && field_settings.type === "boolean" && field_key === "favorite") {
+            values = [`<svg class='icon-star' viewBox="0 0 32 32" data-id=${record.ID}><use xlink:href="${window.wpApiShare.template_dir}/dt-assets/images/star.svg#star"></use></svg>`]
           }
         } else {
           return;
         }
-        values_html += values.map(v=>{
+        values_html += values.map( (v, index)=>{
           return `<li>${v}</li>`
         }).join('')
-
         if ( $(window).width() < mobile_breakpoint ){
           row_fields_html += `
             <td>
@@ -495,6 +509,13 @@
             </td>
           `
         } else {
+          //this looks for the star SVG from the favorited fields and changes the value to a checkmark like other boolean fields to be used in the title element on desktop lists.
+          if (values[0] === `<svg class='icon-star selected' viewBox="0 0 32 32" data-id=${record.ID}><use xlink:href="${window.wpApiShare.template_dir}/dt-assets/images/star.svg#star"></use></svg>` ) {
+            values[0] = '&#9734;'
+          }
+          if (values[0] === `<svg class='icon-star' viewBox="0 0 32 32" data-id=${record.ID}><use xlink:href="${window.wpApiShare.template_dir}/dt-assets/images/star.svg#star"></use></svg>`) {
+            values[0] = '&#9733;'
+          }
           row_fields_html += `
             <td title="${values.join(', ')}">
               <ul>
@@ -537,6 +558,7 @@
     `
     $('#table-content').html(table_html)
     bulk_edit_checkbox_event();
+    favorite_edit_event();
   }
 
   function get_records( offset = 0, sort = null ){
@@ -632,8 +654,15 @@
     fields_filtered.forEach(field=>{
       let type = window.lodash.get(list_settings, `post_type_settings.fields.${field}.type` )
       if ( type === "connection" || type === "user_select" ){
-        search_query.push( { [field] : window.lodash.map(window.lodash.get(Typeahead[`.js-typeahead-${field}`], "items"), "ID") })
+        const allConnections = $(`#${field} .all-connections`)
+        if (type === "connection" && allConnections.prop('checked') === true) {
+          search_query.push( { [field] : ['*'] } )
+        } else {
+          search_query.push( { [field] : window.lodash.map(window.lodash.get(Typeahead[`.js-typeahead-${field}`], "items"), "ID") })
+        }
       } else if ( type === "multi_select" ){
+        search_query.push( {[field] : window.lodash.map(window.lodash.get(Typeahead[`.js-typeahead-${field}`], "items"), "key") })
+      } else if ( type === "tags" ){
         search_query.push( {[field] : window.lodash.map(window.lodash.get(Typeahead[`.js-typeahead-${field}`], "items"), "key") })
       } else if ( type === "location" || type === "location_meta" ){
         search_query.push({ 'location_grid' : window.lodash.map( window.lodash.get(Typeahead[`.js-typeahead-${field}`], "items"), 'ID') })
@@ -670,6 +699,7 @@
         search_query.combine = [ "subassigned" ] // to select checkbox in filter modal
       }
     }
+
     return search_query
   }
   $("#confirm-filter-records").on("click", function () {
@@ -677,6 +707,36 @@
     let filterName = window.lodash.escape( $('#new-filter-name').val() )
     add_custom_filter( filterName || "Custom Filter", "custom-filter", search_query, new_filter_labels)
   })
+
+  function allConnectionsClickHandler() {
+    const tabsPanel = $(this).closest('.tabs-panel')
+    const field = tabsPanel.length === 1 ? tabsPanel[0].id : ''
+    const typeaheadQueryElement = tabsPanel.find('.typeahead__query')
+    const typeaheadCancelButtons = tabsPanel.find('.typeahead__cancel-button')
+    const typeahead = tabsPanel.find(`.js-typeahead-${field}`)
+
+    if ($(this).prop('checked') === true) {
+      typeahead.prop('disabled', true)
+      typeaheadQueryElement.addClass('disabled')
+      // remove the current filters and leave anything in the typeahead as it is
+      removeAllFilterLabels(field)
+      const fieldLabel = list_settings.post_type_settings.fields[field] ? list_settings.post_type_settings.fields[field].name : ''
+      const filterName = `${window.lodash.escape( fieldLabel )}: ${window.lodash.escape( list_settings.translations.all )}`
+      selected_filters.append(`<span class="current-filter ${window.lodash.escape( field )}" data-id="*">${filterName}</span>`)
+      new_filter_labels.push({id: '*', name: filterName, field: field})
+    } else {
+      typeahead.prop('disabled', false)
+      typeaheadQueryElement.removeClass('disabled')
+      removeFilterLabels('*', field)
+      // clear the typeahead by manually clicking each selected item.
+      // This is done at this point as it triggers the typeahead to open which we don't want just after we have disabled it.
+      typeaheadCancelButtons.each(function () {
+        $(this).trigger('click', { botClick: true })
+      })
+    }
+  }
+
+  $('.all-connections').on("click", allConnectionsClickHandler)
 
 
   let load_multi_select_typeaheads = async function load_multi_select_typeaheads() {
@@ -787,9 +847,8 @@
             matchOn: ["ID"],
             data: [],
             callback: {
-              onCancel: function (node, item) {
-                $(`.current-filter[data-id="${item.ID}"].${field_key}`).remove()
-                window.lodash.pullAllBy(new_filter_labels, [{id: item.ID}], "id")
+              onCancel: function (node, item, event) {
+                removeFilterLabels(item.ID, field_key)
               }
             }
           },
@@ -809,6 +868,20 @@
         });
       }
     })
+  }
+
+  const removeFilterLabels = (id, field_key) => {
+    $(`.current-filter[data-id="${id}"].${field_key}`).remove()
+    window.lodash.pullAllBy(new_filter_labels, [{id: id}], "id")
+  }
+
+  const removeAllFilterLabels = (field_key) => {
+    // get all id's for this field_key
+    let ids = []
+    document.querySelectorAll(`.current-filter.${field_key}`).forEach((element) => {
+      ids.push(element.dataset.id)
+    })
+    ids.forEach((id) => removeFilterLabels(id, field_key))
   }
 
   let load_user_select_typeaheads = ()=>{
@@ -961,6 +1034,12 @@
     $("#filter-modal input:checked").each(function () {
       $(this).prop('checked', false)
     })
+    $("#filter-modal input:disabled").each(function () {
+      $(this).prop('disabled', false)
+    })
+    $('#filter-modal .typeahead__query.disabled').each(function () {
+      $(this).removeClass('disabled')
+    })
     selected_filters.empty();
     $(".typeahead__query input").each(function () {
       let typeahead = Typeahead['.'+$(this).attr("class").split(/\s+/)[0]]
@@ -975,13 +1054,25 @@
     $('#save-filter-edits').hide()
   })
 
+  $("#filter-modal input.dt_date_picker").on('blur', function (e) {
+    // delay the blur so that if the user has clicked we get the correct date from the input
+    setTimeout(() => {
+      if (!e.target.value) {
+        const clearButton = $(this).prev('.clear-date-picker')
+        clearButton.click()
+        return
+      }
+      $(this).datepicker('setDate', e.target.value)
+      $('.ui-datepicker-current-day').click()
+    }, 100);
+  })
+
   let edit_saved_filter = function( filter ){
     $('#filter-modal').foundation('open');
     typeaheads_loaded.then(()=>{
-      new_filter_labels = filter.labels
       let connectionTypeKeys = list_settings.post_type_settings.connection_types
       connectionTypeKeys.push("location_grid")
-      new_filter_labels.forEach(label=>{
+      filter.labels.forEach(label=>{
         selected_filters.append(`<span class="current-filter ${window.lodash.escape( label.field )}" data-id="${window.lodash.escape( label.id )}">${window.lodash.escape( label.name )}</span>`)
         let type = window.lodash.get(list_settings, `post_type_settings.fields.${label.field}.type`)
         if ( type === "key_select" || type === "boolean" ){
@@ -989,13 +1080,24 @@
         } else if ( type === "date" ){
           $(`#filter-modal #${label.field}-options #${label.id}`).datepicker('setDate', label.date)
         } else if ( connectionTypeKeys.includes( label.field ) ){
-          Typeahead[`.js-typeahead-${label.field}`].addMultiselectItemLayout({ID:label.id, name:label.name})
+          if (label.id === '*') {
+            const fieldAllConnectionsElement = document.querySelector(`#filter-modal #${label.field} .all-connections`)
+            const boundAllConnectionsClickHandler = allConnectionsClickHandler.bind(fieldAllConnectionsElement)
+            $(fieldAllConnectionsElement).prop('checked', true)
+            boundAllConnectionsClickHandler()
+          } else {
+            Typeahead[`.js-typeahead-${label.field}`].addMultiselectItemLayout({ID:label.id, name:label.name})
+          }
         } else if ( type === "multi_select" ){
           Typeahead[`.js-typeahead-${label.field}`].addMultiselectItemLayout({key:label.id, value:label.name})
+        } else if ( type === "tags" ){
+          Typeahead[`.js-typeahead-${label.field}`].addMultiselectItemLayout({key:label.id, value:label.id})
         } else if ( type === "user_select" ){
           Typeahead[`.js-typeahead-${label.field}`].addMultiselectItemLayout({name:label.name, ID:label.id})
         }
       })
+      // moved this below the forEach as the global new_filter_labels was messing with the loop.
+      new_filter_labels = filter.labels
       ;(filter.query.combine || []).forEach(c=>{
         $(`#combine_${c}`).prop('checked', true)
       })
@@ -1032,7 +1134,7 @@
     let option_id = $(this).val()
     if ($(this).is(":checked")){
       let field_options = window.lodash.get( list_settings, `post_type_settings.fields.${field_key}.default` )
-      let option_name = field_options[option_id]["label"]
+      let option_name = field_options[option_id] ? field_options[option_id]["label"] : '';
       let name = window.lodash.get(list_settings, `post_type_settings.fields.${field_key}.name`, field_key)
       new_filter_labels.push({id:$(this).val(), name:`${name}: ${option_name}`, field:field_key})
       selected_filters.append(`<span class="current-filter ${window.lodash.escape( field_key )}" data-id="${window.lodash.escape( option_id )}">${window.lodash.escape( name )}:${window.lodash.escape( option_name )}</span>`)
@@ -1077,7 +1179,8 @@
       `)
     },
     changeMonth: true,
-    changeYear: true
+    changeYear: true,
+    yearRange: "-20:+10",
   })
 
   $('#filter-modal .clear-date-picker').on('click', function () {
@@ -1265,6 +1368,24 @@
   })
 
 
+  /***
+   * Favorite from List
+   */
+   function favorite_edit_event() {
+      $("svg.icon-star").on('click', function(e) {
+        e.stopImmediatePropagation();
+        let post_id = this.dataset.id
+        let favoritedValue;
+        if ( $(this).hasClass('selected') ) {
+          favoritedValue = false;
+        } else {
+          favoritedValue = true;
+        }
+        API.update_post(list_settings.post_type, post_id, {'favorite': favoritedValue}).then((new_post)=>{
+          $(this).toggleClass('selected');
+        })
+      })
+   }
 
   /***
    * Bulk Edit
