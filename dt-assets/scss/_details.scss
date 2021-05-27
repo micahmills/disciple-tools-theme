@@ -160,6 +160,8 @@ DT comments and activity
     }
 
     .tabs-content {
+        background: initial;
+        color: initial;
         border: none;
     }
 
@@ -529,7 +531,7 @@ Groups
 
 
 .members-section {
-    border: 1px solid #ccc;
+    border: 1px solid var(--medium-gray);
     #empty-members-list-message {
         padding: 10px 10px;
     }
@@ -557,7 +559,7 @@ Groups
     button {
         height: 36px;
         width: max-content;
-        border: 1px solid #ccc;
+        border: 1px solid var(--medium-gray);
         vertical-align: bottom;
         border-bottom: 2px solid white;
         margin-bottom: -1px;

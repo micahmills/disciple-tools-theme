@@ -15,6 +15,24 @@ THEMING VARIABLES
     --secondaryColor: #4caf50;
     --secondaryColor-Darker: #00897B;
     --backgroundColor: #e2e2e2;
+    --light-gray: #{$light-gray};
+    --medium-gray: #{$medium-gray};
+    --dark-gray: #{$dark-gray};
+    --black: #{$black};
+    --white: #{$white};
+    --off-white: #{$off-white};
+    --off-white2: #f2f2f2;
+
+    --TopBar: var(--mainColor);
+    --TopBar-active: var(--mainColor-Darker);
+    --secondBar: var(--backgroundColor_Lighter);
+    --SectionHeader-Color: var(--mainColor);
+    --textColor: var(--black);
+    --textColor-opposite: var(--Theme2-backgroundColor_Lighter, $white);
+    --textColor-middle: var(--dark-gray);
+    --backgroundColor_Lighter: var(--white);
+    --star: var(--medium-gray);
+    --star-active: hsl(45, 100%, 51%);
 
 
     --Theme2-mainColor: #4caf50;
@@ -24,7 +42,32 @@ THEMING VARIABLES
     --Theme2-mainColor-Lightest: #F1F8F2; /**hsl(122,33%,96%)88**/
     --Theme2-secondaryColor: #{$primary-color};
     --Theme2-secondaryColor-Darker:#{scale-color($primary-color, $lightness: -15%)};
-    --Theme2-backgroundColor: #E1E5E1 /**hsla(122, 6% , 89%, 1) **/
+    --Theme2-backgroundColor: #E1E5E1; /**hsla(122, 6% , 89%, 1) **/
+    --Theme2-backgroundColor_Lighter: #fff;
+    --Theme2-SectionHeader-Color: var(--Theme2-secondaryColor);
+    --Theme2-white: #fff;
+    --Theme2-black: #0a0a0a;
+    --Theme2-light-gray: #e6e6e6;
+    --Theme2-medium-gray: #cacaca;
+    --Theme2-dark-gray: #8a8a8a;
+    --Theme2-black: #0a0a0a;
+    --Theme2-white: #fefefe;
+    --Theme2-off-white: #fafafa;
+    --Theme2-off-white2: #f2f2f2;
+
+
+    --Theme3-mainColor: #626262;
+    --Theme3-mainColor-Darker: #{darken(#626262, 5%)};
+    --Theme3-mainColor-Darkest: #{darken(#626262, 15%)};
+    --Theme3-mainColor-Lighter: #{scale-color(#626262, $lightness: 19%, $saturation: 80%)};
+    --Theme3-mainColor-Lightest: #F7F7F7; /**hsl(122,33%,96%)88**/
+    --Theme3-secondaryColor: #{$primary-color};
+    --Theme3-secondaryColor-Darker:#{scale-color($primary-color, $lightness: -15%)};
+    --Theme3-backgroundColor: #3B3B3B; /**hsla(122, 6% , 89%, 1) **/
+    --Theme3-backgroundColor_Lighter: #7E7E7E;
+    --Theme3-SectionHeader-Color: var(--Theme3-mainColor-Lightest);
+
+
   }
 
 /*********************
@@ -36,7 +79,7 @@ GENERAL STYLES
 }
 
 .txt-gray-light {
-color:$light-gray;
+color:var( --light-gray , #{$light-gray});
 }
 
 .txt-gray-mid {
@@ -78,11 +121,11 @@ footer {
 }
 
 .top-border {
-    border-top: 1px solid #ccc;
+    border-top: 1px solid var(--medium-gray);
 }
 
 .bottom-border {
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid var(--medium-gray);
 }
 
 .tall-4 {
@@ -127,25 +170,25 @@ a:visited {
 NAVIGATION STYLES
 *********************/
 .top-bar {
-    border-bottom: 1px solid $light-gray;
+    border-bottom: 1px solid var(--TopBar, $light-gray);
     //padding-top:5px;
     //padding-bottom: 5px;
     //.title-area {
     //    z-index: 1;
     //}
-    background-color: var(--mainColor, $primary-color);
+    background-color: var(--TopBar, $primary-color);
 
     ul {
-        background-color: var(--mainColor, $primary-color);
+        background-color: var(--TopBar, $primary-color);
     }
 
     a {
-        color: white;
+        color: var(--textColor-opposite, $white);
     }
 
     .active {
         a {
-            background: var( --mainColor-Darkest, #224f72);
+            background: var( --TopBar-active, #224f72);
             //color: $black;
         }
     }
@@ -162,23 +205,23 @@ NAVIGATION STYLES
 
     .dropdown.menu {
         a {
-          background-color: var(--mainColor, $primary-color);
+          background-color: var(--TopBar-active, $primary-color);
         }
         li.active > a {
-            background: var(--mainColor-Darker, #005a87);
+            background: var(--TopBar-active, #005a87);
         }
     }
     .top-bar-left {
         .dropdown.menu a:hover {
-            background-color: var(--mainColor-Darkest, #005a87)
+            background-color: var(--TopBar-active, #005a87)
         }
         //make dropdown caret white
         .dropdown.menu>li.is-dropdown-submenu-parent>a:after {
-            border-color: #fefefe transparent transparent;
+            border-color: var(--textColor-opposite) transparent transparent;
         }
     }
     .dropdown.menu .is-submenu-item a:hover {
-        background-color: var(--mainColor-Darkest, #224f72)
+        background-color: var(--TopBar-active, #224f72)
     }
 
     a {
@@ -227,7 +270,7 @@ NAVIGATION STYLES
     margin-left:10px;
 }
 .add-new-items-dropdown {
-    background-color: var(--mainColor, #3f729b);
+    background-color: var(--TopBar, #3f729b);
     text-align: left;
     a {
         vertical-align: middle;
@@ -241,7 +284,7 @@ NAVIGATION STYLES
 
 nav.second-bar {
     padding: 0.5em;
-    background-color: white;
+    background-color: var(--secondBar, $white);
     width: 100%;
     top: auto;
     transform: translateX(0);
@@ -279,12 +322,12 @@ nav.second-bar {
             .icon-star {
                 height: 1.8em;
                 width: auto;
-                fill: hsl(45, 5%, 77%);
+                fill: var(--star, $medium-gray);
             }
 
             &.selected{
                 .icon-star {
-                    fill: hsl(45, 100%, 51%);
+                    fill: var(--star-acive, hsl(45, 100%, 51%));
                 }
             }
         }
@@ -319,9 +362,9 @@ nav.second-bar {
 }
 
 .search-input__clear-button {
-    color: var(--mainColor, $primary-color);
+    color: var(--TopBar, $primary-color);
     font-weight: bold;
-    border: 1px solid #cacaca;
+    border: 1px solid var(--medium-gray);
     border-left: unset;
     padding: 0 0.5rem;
     display: none;
@@ -348,7 +391,7 @@ nav.second-bar {
 }
 
 nav.second-bar .advanced_search {
-    border: 1px solid #cacaca;
+    border: 1px solid var(--medium-gray);
     border-inline-start: 0;
     padding: 0.15em 0.5em;
     transform: translateX(-5px);
@@ -496,8 +539,8 @@ POSTS & CONTENT STYLES
 $bordered-box-padding: 1rem;
 
 .bordered-box {
-    border: 1px solid $light-gray;
-    background-color: $white;
+    border: 1px solid var( --backgroundColor_Lighter, $light-gray);
+    background-color: var(--backgroundColor_Lighter, $white);;
     padding: $bordered-box-padding;
     box-shadow: 0 2px 4px rgba(0,0,0,0.25);
     border-radius: 10px;
@@ -525,9 +568,9 @@ button {
     cursor: pointer;
 
     &.clear {
-        background-color: white;
-        color: black;
-        border: solid 1px #ccc;
+        background-color: var(--white);
+        color: var(--black);
+        border: solid 1px var(--medium-gray);
     }
 }
 
@@ -556,7 +599,7 @@ img {
 Title for boxed section
  */
 .section-header {
-    color: var(--mainColor, $primary-color);
+    color: var(--SectionHeader-Color, $primary-color);
     font-size: 1.5rem;
 }
 
@@ -763,7 +806,7 @@ button.loader {
     display: block;
     padding: 0.5rem 0.75rem;
     clear: both;
-    color: #333;
+    color: var(--textColor-middle);
     text-decoration: none;
 }
 
@@ -1065,7 +1108,7 @@ div.help-more h5 {
 }
 @media screen and (min-width : 640px) {
     .left-border-grey {
-        border-left: 1px solid $light-gray;
+        border-left: 1px solid var( --light-gray , #{$light-gray});
     }
 }
 
@@ -1156,7 +1199,7 @@ div.help-more h5 {
     background: #fff;
     cursor: pointer;
     padding: 5px 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--medium-gray);
     width: 250px;
 
     .dt_caret {

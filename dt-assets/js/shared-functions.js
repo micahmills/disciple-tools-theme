@@ -659,6 +659,10 @@ function switchTheme(theme) {
     .getPropertyValue(`--${theme}-secondaryColor-Darker`);
   var newTheme_background = getComputedStyle(document.documentElement)
     .getPropertyValue(`--${theme}-backgroundColor`);
+  var newTheme_backgroundLighter = getComputedStyle(document.documentElement)
+    .getPropertyValue(`--${theme}-backgroundColor_Lighter`);
+  var newTheme_SectionHeader = getComputedStyle(document.documentElement)
+    .getPropertyValue(`--${theme}-SectionHeader-Color`);
 
   document.documentElement.style.setProperty(`--mainColor`, newTheme_primary);
   document.documentElement.style.setProperty(`--mainColor-Darker`, newTheme_primaryDarker);
@@ -668,6 +672,8 @@ function switchTheme(theme) {
   document.documentElement.style.setProperty(`--secondaryColor`, newTheme_secondary);
   document.documentElement.style.setProperty(`--secondaryColor-Darker`, newTheme_secondaryDarker);
   document.documentElement.style.setProperty(`--backgroundColor`, newTheme_background);
+  document.documentElement.style.setProperty(`--backgroundColor_Lighter`, newTheme_backgroundLighter);
+  document.documentElement.style.setProperty(`--SectionHeader-Color`, newTheme_SectionHeader);
 }
 
 // nonce timeout fix
