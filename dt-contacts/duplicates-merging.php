@@ -377,6 +377,18 @@ class DT_Duplicate_Checker_And_Merging {
                     $update[$key]["values"][] = [ "value" => $field_value ];
                 }
             }
+            if ( isset( $contact_fields[$key] ) && $contact_fields[$key]["type"] === "tag" ){
+                $update[$key]["values"] = [];
+                foreach ( $fields as $field_value ){
+                    $update[$key]["values"][] = [ "value" => $field_value ];
+                }
+            }
+            if ( isset( $contact_fields[$key] ) && $contact_fields[$key]["type"] === "user_select" ){
+                $update[$key]["values"] = [];
+                foreach ( $fields as $field_value ){
+                    $update[$key]["values"][] = [ "value" => $field_value ];
+                }
+            }
             if ( isset( $contact_fields[ $key ] ) && $contact_fields[ $key ]["type"] === "key_select" && ( !isset( $contact[ $key ] ) || $key === "none" || $key === "" ) ) {
                 $update[$key] = $fields["key"];
             }
@@ -408,6 +420,10 @@ class DT_Duplicate_Checker_And_Merging {
                     ];
                 }
             }
+            if ( isset( $contact_fields[$key] ) && $contact_fields[$key]["type"] === "boolean" && ( !isset( $contact[$key] ) || empty( $contact[$key] ) )){
+                $update[$key] = $fields;
+            }
+
 
 
             if ( strpos( $key, "contact_" ) === 0 ) {
