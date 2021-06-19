@@ -128,7 +128,7 @@ table.js-list{
 .current-filter {
     font-size: 0.875rem;
     position: relative;
-    background: #ecf5fc;
+    background: var( --mainColor-Lightest );;
     border: 1px solid #c2e0ff;
     padding: 4px;
     border-radius: 2px;
@@ -232,6 +232,7 @@ table.js-list{
 #table-content {
     tr {
         cursor: pointer;
+        background-color: var(--backgroundColor_Lighter);
         ul {
             list-style: none;
             margin:0;
@@ -247,7 +248,7 @@ table.js-list{
         }
     }
     tr:hover{
-        background-color: #ecf5fc
+        background-color: var( --mainColor-Lightest );
     }
 }
 
@@ -286,9 +287,9 @@ table.js-list{
 .icon-star {
     height: 1em;
     width: 1em;
-    fill: hsl(45, 5%, 77%);
+    fill: var( --star );
     &.selected {
-        fill: hsl(45, 100%, 51%);
+        fill: var( --star-active );
     }
 }
 
@@ -322,7 +323,7 @@ table.js-list{
             }
         }
         tr:hover{
-            background-color: #ecf5fc
+            background-color: var( --mainColor-Lightest );
         }
     }
 }

@@ -46,7 +46,7 @@
     color: #cc4b37;
     &:hover {
         background-color: #cc4b37;
-    color: #fefefe;
+        color: var(--white);
     }
 }
 html[dir='rtl'] {

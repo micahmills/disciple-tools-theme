@@ -227,7 +227,7 @@ NAVIGATION STYLES
     a {
         font-weight: bold;
         padding: 1rem;
-        color: #fefefe;
+        color: var( --white );
     }
 
     .image-menu-nav {
@@ -1093,7 +1093,7 @@ div.help-more h5 {
     table.js-list {
         tbody tr:nth-child(even) {
             border-bottom: 0;
-            background-color: #f1f1f1;
+            background-color: var( --backgroundColor_Lighter);
         }
     }
 
@@ -1346,14 +1346,14 @@ img.dt-blue-icon {
     }
     .type-option:hover {
         .type-option-border {
-            background-color: #ecf5fc;
+            background-color: var( --mainColor-Lightest );
             border: 1px solid #c2e0ff;
             border-radius:15px;
         }
     }
     .type-option.selected {
         .type-option-border {
-            background-color: #ecf5fc;
+            background-color: var( --mainColor-Lightest );
             border: 1px solid #c2e0ff;
             border-radius:15px;
         }
