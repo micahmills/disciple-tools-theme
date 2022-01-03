@@ -290,4 +290,24 @@ jQuery(document).ready(function($) {
     }
   })
 
+
+  $('.quick-action-menu').on("click", function () {
+    let fieldKey = $(this).data("id")
+
+    let data = {}
+    let numberIndicator = $(`span.${fieldKey}`)
+    let newNumber = parseInt(numberIndicator.first().text() || "0" ) + 1
+    data[fieldKey] = newNumber
+    API.update_post('groups', post_id, data).then(()=>{
+      record_updated(false)
+    })
+    .catch(err=>{
+      console.log("error")
+      console.log(err)
+    })
+
+    if (fieldKey.indexOf("group_quick_button")>-1){
+      numberIndicator.text(newNumber)
+    }
+  })
 })

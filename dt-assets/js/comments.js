@@ -72,7 +72,7 @@ jQuery(document).ready(function($) {
       item.date = moment.unix(item.hist_time)
       let field = item.meta_key
 
-      if (field && field.includes("quick_button_")){
+      if (field && field.includes("quick_button_") || field && field.includes("group_quick_button_")){
         if (window.detailsSettings){
           field = window.lodash.get(window.detailsSettings,`post_settings.fields[${item.meta_key}].name`)
         }

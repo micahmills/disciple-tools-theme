@@ -83,12 +83,19 @@ class Disciple_Tools_Tab_Custom_Lists extends Disciple_Tools_Abstract_Menu_Base
             $this->box( 'bottom' );
             /* end Channels */
 
-            /* Quick Actions */
-            $this->box( 'top', __( 'Quick Actions', 'disciple_tools' ) );
+            /* Contact Quick Actions */
+            $this->box( 'top', __( 'Contact Quick Actions', 'disciple_tools' ) );
             $this->process_quick_actions_box();
             $this->quick_actions_box();
             $this->box( 'bottom' );
-            /* end Quick Actions */
+            /* end Contact Quick Actions */
+
+            /* Group Quick Actions */
+            $this->box( 'top', __( 'Group Quick Actions', 'disciple_tools' ) );
+            $this->process_group_quick_actions_box();
+            $this->group_quick_actions_box();
+            $this->box( 'bottom' );
+            /* end Group Quick Actions */
 
             /* Languages */
             $this->box( 'top', __( 'Language Options', 'disciple_tools' ) );
@@ -657,6 +664,79 @@ class Disciple_Tools_Tab_Custom_Lists extends Disciple_Tools_Abstract_Menu_Base
         <?php
     }
 
+    private function group_quick_actions_box(){
+        $fields = DT_Posts::get_post_settings( 'groups' )['fields'];
+        $default_fields = apply_filters( 'dt_custom_fields_settings', [], "groups" );
+        ?>
+        <form method="post" name="group_quick_actions_box" id="quick-actions">
+            <input type="hidden" name="group_quick_actions_box_nonce" value="<?php echo esc_attr( wp_create_nonce( 'group_quick_actions_box' ) ) ?>" />
+            <table class="widefat">
+                <thead>
+                <tr>
+                    <td></td>
+                    <td><?php esc_html_e( 'Name', 'disciple_tools' ) ?></td>
+                    <td><?php esc_html_e( 'Icon link (must be https)', 'disciple_tools' ) ?></td>
+                    <td></td>
+                    <td><?php esc_html_e( 'Delete', 'disciple_tools' ) ?></td>
+                </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    foreach ( $fields as $field_key => $field_settings ) :
+                        if ( ! isset( $field_settings['section'] ) || substr( $field_settings['section'], 0, 20 ) !== 'group_quick_buttons' ) {
+                            continue;
+                        }?>
+                        <tr>
+                            <td>
+                                <img style="width: 20px; vertical-align: middle;" src="<?php echo esc_attr( $field_settings['icon'] ); ?>" class="quick-action-menu">
+                            </td>
+                            <td>
+                                <?php
+                                if ( !isset( $default_fields[$field_key] ) ) {
+                                    echo '<input type="text" name="edit_field[' . esc_attr( $field_key ) . ']" value="'. esc_html( $field_settings['name'] ) . '">';
+                                } else {
+                                    echo esc_html( $field_settings['name'] );
+                                    echo '<input type="hidden" name="edit_field[' . esc_attr( $field_key ) . ']" value="'. esc_html( $field_settings['name'] ) . '">';
+                                } ?>
+                            </td>
+                            <td class="quick-action-menu"><input type="text" name="edit_field_icon[<?php echo esc_attr( $field_key ); ?>]" value="<?php echo esc_html( $field_settings['icon'] ) ?>"></td>
+                            <td>
+                                <button class="button file-upload-display-uploader" data-form="group_quick_actions_box"
+                                        data-icon-input="edit_field_icon[<?php echo esc_attr( $field_key ); ?>]"><?php esc_html_e( 'Upload Icon', 'disciple_tools' ); ?></button>
+                            </td>
+                            <td>
+                                <?php
+                                if ( !isset( $default_fields[$field_key] ) ){
+                                    echo '<button type="submit" name="delete_field" value="' . esc_attr( $field_key ) . '" class="button small">' . esc_html( __( "Delete", 'disciple_tools' ) ) . '</button>';
+                                } ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            <br><button type="button" onclick="jQuery('#add_quick_action').toggle();" class="button">
+                <?php echo esc_html__( 'Add new quick action', 'disciple_tools' ) ?></button>
+            <button type="submit" style="float:right;" class="button"><?php echo esc_html( __( 'Save', 'disciple_tools' ) ) ?></button>
+            <div id="add_group_quick_action" style="display:none;">
+                <hr>
+                <label for="add_custom_group_quick_action_label">Name:</label>
+                <input name="add_custom_qgroup_uick_action_label" placeholder="Custom Quick Action" type="text">
+                <br>
+                <br>
+                <div class="menuitem">
+                    <label for="default">Default Icon:</label>
+                    <input type="radio" name="icon" value="default" checked><img src="<?php echo esc_html( get_template_directory_uri() ); ?>/dt-assets/images/contact.svg"></div>
+                    <br>
+                    <label for="custom">Custom Icon URL:</label>
+                    <input type="radio" name="icon" value="custom">
+                    <input name="add_custom_group_quick_action_icon" type="text">
+                    <br>
+                    <button type="submit" class="button"><?php esc_html_e( 'Add', 'disciple_tools' ) ?></button>
+            </div>
+        </form>
+        <?php
+    }
+
     public function process_quick_actions_box(){
         // Look for nonce and verify it
         if ( isset( $_POST['quick_actions_box_nonce'] ) ) {
@@ -739,6 +819,97 @@ class Disciple_Tools_Tab_Custom_Lists extends Disciple_Tools_Abstract_Menu_Base
 
             foreach ( $edit_field_icon as $key => $value ) {
                 $custom_field_options['contacts'][ $key ]['icon'] = $value;
+            }
+
+            update_option( 'dt_field_customizations', $custom_field_options, true );
+                    wp_cache_delete( "contacts_field_settings" );
+
+                    self::admin_notice( __( 'Quick Action edited successfully', 'disciple_tools' ), 'success' );
+                    return;
+        }
+    }
+    public function process_group_quick_actions_box(){
+        // Look for nonce and verify it
+        if ( isset( $_POST['group_quick_actions_box_nonce'] ) ) {
+            if ( !wp_verify_nonce( sanitize_key( $_POST['group_quick_actions_box_nonce'] ), 'group_quick_actions_box' ) ){
+                self::admin_notice( __( 'Something went wrong', 'disciple_tools' ), 'error' );
+                return;
+            }
+        }
+
+        // Load custom fields
+        $custom_field_options = dt_get_option( 'dt_field_customizations' );
+
+        // Add a new custom field
+        if ( ! empty( $_POST['add_custom_group_quick_action_label'] ) ) {
+            $label = sanitize_text_field( wp_unslash( $_POST['add_custom_group_quick_action_label'] ) );
+            $key = dt_create_field_key( 'group_quick_button_' . $label );
+
+            // Check quick action icon
+            if ( ! empty( $_POST['add_custom_group_quick_action_icon'] ) ) {
+                $icon_url = sanitize_text_field( wp_unslash( $_POST["add_custom_group_quick_action_icon"] ) );
+            } else {
+                $icon_url = get_template_directory_uri() . '/dt-assets/images/contact.svg';
+            }
+
+            if ( empty( $label ) ) {
+                wp_die( 'Quick Action Update Error: Label is missing' );
+            }
+
+            if ( empty( $key ) ) {
+                wp_die( 'Quick Action Update Error: Key is missing' );
+            } else {
+                // Add new Quick Action
+                $key = dt_create_field_key( $key, true );
+                $custom_field_options['groups'][$key] = [
+                    'name'        => $label,
+                    'description' => '',
+                    'type'        => 'number',
+                    'default'     => 0,
+                    'section'     => 'group_quick_buttons',
+                    'icon'        => $icon_url,
+                    'customizable' => false,
+                ];
+
+                update_option( 'dt_field_customizations', $custom_field_options, true );
+                wp_cache_delete( "group_field_settings" );
+
+                self::admin_notice( __( 'Quick Action added successfully', 'disciple_tools' ), 'success' );
+                return;
+            }
+        }
+
+        // Delete Quick Action
+        if ( ! empty( $_POST['delete_field'] ) ) {
+            $delete_key = sanitize_text_field( wp_unslash( $_POST['delete_field'] ) );
+
+            unset( $custom_field_options['groups'][ $delete_key ] );
+            update_option( 'dt_field_customizations', $custom_field_options, true );
+
+            wp_cache_delete( "contacts_field_settings" );
+            self::admin_notice( __( 'Quick Action deleted successfully', 'disciple_tools' ), 'success' );
+            return;
+        }
+
+        // Edit Quick Action
+        if ( ! empty( $_POST['edit_field'] ) ) {
+
+            $quick_action_edits = dt_recursive_sanitize_array( $_POST['edit_field'] );
+
+            if ( isset( $_POST['edit_field_icon'] ) ) {
+                $edit_field_icon = dt_recursive_sanitize_array( $_POST['edit_field_icon'] );
+            } else {
+                $edit_field_icon = get_template_directory_uri() . '/dt-assets/images/contact.svg';
+            }
+
+            foreach ( $quick_action_edits as $quick_action_key => $quick_action_new_name ) {
+                $quick_action_key = sanitize_text_field( wp_unslash( $quick_action_key ) );
+                $quick_action_new_name = sanitize_text_field( wp_unslash( $quick_action_new_name ) );
+                $custom_field_options['groups'][ $quick_action_key ]['name'] = $quick_action_new_name;
+            }
+
+            foreach ( $edit_field_icon as $key => $value ) {
+                $custom_field_options['groups'][ $key ]['icon'] = $value;
             }
 
             update_option( 'dt_field_customizations', $custom_field_options, true );

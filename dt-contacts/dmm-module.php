@@ -264,6 +264,17 @@ class DT_Contacts_DMM  extends DT_Module_Base {
 
 
         }
+        if ( $post_type === 'groups' ){
+            $fields['group_quick_button_meeting_complete'] = [
+                'name'        => __( 'Group Meeting Complete', 'disciple_tools' ),
+                'description' => '',
+                'type'        => 'number',
+                'default'     => 0,
+                'section'     => 'group_quick_buttons',
+                'icon'        => get_template_directory_uri() . "/dt-assets/images/meeting-complete.svg?v=2",
+                "customizable" => false
+            ];
+        }
         return dt_array_merge_recursive_distinct( $declared_fields, $fields );
     }
 
@@ -410,6 +421,45 @@ class DT_Contacts_DMM  extends DT_Module_Base {
                         <?php
                         foreach ( $contact_fields as $field => $val ) {
                             if ( strpos( $field, "quick_button" ) === 0 ) {
+                                $current_value = 0;
+                                if ( isset( $contact[$field] ) ) {
+                                    $current_value = $contact[$field];
+                                } ?>
+                                <li class="quick-action-menu" data-id="<?php echo esc_attr( $field ) ?>">
+                                    <a>
+                                        <img src="<?php echo esc_url( $val['icon'] ); ?>">
+                                        <?php echo esc_html( $val["name"] ); ?>
+                                        (<span class="<?php echo esc_attr( $field ) ?>"><?php echo esc_html( $current_value ); ?></span>)
+                                    </a>
+                                </li>
+                                <?php
+                            }
+                        }
+                        ?>
+                    </ul>
+                </li>
+            </ul>
+            <button class="help-button" data-section="quick-action-help-text">
+                <img class="help-icon"
+                     src="<?php echo esc_html( get_template_directory_uri() . '/dt-assets/images/help.svg?v=2' ) ?>"/>
+            </button>
+            <?php
+        }
+        if ( $post_type === "groups" ){
+            $contact = DT_Posts::get_post( "groups", get_the_ID() );
+            $group_fields = DT_Posts::get_post_field_settings( $post_type );
+            dt_write_log($group_fields);
+            ?>
+
+            <ul class="dropdown menu" data-dropdown-menu style="display: inline-block">
+                <li style="border-radius: 5px">
+                    <a class="button menu-white-dropdown-arrow"
+                       style="background-color: #00897B; color: white;">
+                        <?php esc_html_e( "Quick Actions", 'disciple_tools' ) ?></a>
+                    <ul class="menu is-dropdown-submenu" style="width: max-content">
+                        <?php
+                        foreach ( $group_fields as $field => $val ) {
+                            if ( strpos( $field, "group_quick_button" ) === 0 ) {
                                 $current_value = 0;
                                 if ( isset( $contact[$field] ) ) {
                                     $current_value = $contact[$field];
