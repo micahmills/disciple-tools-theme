@@ -504,6 +504,7 @@ if ( ! defined( 'DT_FUNCTIONS_READY' ) ){
         $required_tag = ( isset( $fields[$field_key]['required'] ) && $fields[$field_key]['required'] === true ) ? 'required' : '';
         $field_type = isset( $fields[$field_key]['type'] ) ? $fields[$field_key]['type'] : null;
         $is_private = isset( $fields[$field_key]['private'] ) && $fields[$field_key]['private'] === true;
+        $private = ( isset( $fields[$field_key]['private'] ) && $fields[$field_key]['private'] ) ?  'private' : '';
         $display_field_id = $field_key;
         if ( !empty( $field_id_prefix ) ) {
             $display_field_id = $field_id_prefix . $field_key;
@@ -674,9 +675,24 @@ if ( ! defined( 'DT_FUNCTIONS_READY' ) ){
                     </div>
                 <?php } ?>
             <?php elseif ( $field_type === 'text' ) :?>
-                <input id="<?php echo esc_html( $display_field_id ); ?>" type="text" <?php echo esc_html( $required_tag ) ?>
-                       class="text-input"
-                       value="<?php echo esc_html( $post[$field_key] ?? '' ) ?>" <?php echo esc_html( $disabled ); ?>/>
+                <dt-text
+                    name="field-name"
+                    label="<?php echo esc_html( $fields[$field_key]['name'] ) ?>"
+                    value="<?php echo esc_html( $post[$field_key] ?? '' ) ?>"
+                    type="text"
+                    required="<?php echo esc_html( $required_tag ) ?>"
+                    requiredmessage=""
+                    icon="<i class='fi-lock small'></i>"
+                    privatelabel="Private Field: Only I can see it's content"
+                    <?php echo esc_html( $private ); ?>
+                    <?php echo esc_html( $disabled ); ?>
+                    onchange=""
+                    internals-valid=""
+                    aria-invalid="false"
+                    id="<?php echo esc_html( $display_field_id ); ?>"
+                ></dt-text>
+
+
             <?php elseif ( $field_type === 'textarea' ) :?>
                 <textarea id="<?php echo esc_html( $display_field_id ); ?>" <?php echo esc_html( $required_tag ) ?>
                        class="textarea dt_textarea" <?php echo esc_html( $disabled ); ?>><?php echo esc_html( $post[$field_key] ?? '' ) ?></textarea>
