@@ -59,6 +59,24 @@ function dt_theme_register_style( string $handle, string $rel_src, array $deps =
 }
 
 
+function enqueue_web_component( $name, $rel_path ) {
+    $path = '/dt-assets/js/web-components/dist/' . $rel_path;
+
+    wp_enqueue_script( 'web-components-' . $name, get_template_directory_uri() . $path, null, filemtime( get_template_directory() . $path ) );
+}
+
+function add_type_attribute($tag, $handle, $src) {
+    // if not your script, do nothing and return original $tag
+    if(strpos($handle, 'web-components-') !== false){
+        // change the script tag by adding type="module" and return it.
+        $tag = '<script type="module" src="' . esc_url( $src ) . '"></script>';
+        return $tag;
+    }
+    return $tag;
+}
+
+add_filter('script_loader_tag', 'add_type_attribute' , 10, 3);
+
 /**
  * Primary site script loader
  */
@@ -81,6 +99,8 @@ function dt_site_scripts() {
 
 
     dt_theme_enqueue_script( 'site-js', 'dt-assets/build/js/scripts.min.js', array( 'jquery' ), true );
+
+    enqueue_web_component( 'all', 'index.js' );
 
     // Register main stylesheet
     dt_theme_enqueue_style( 'site-css', 'dt-assets/build/css/style.min.css', array() );
