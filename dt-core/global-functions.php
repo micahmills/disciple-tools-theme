@@ -521,67 +521,7 @@ if ( ! defined( 'DT_FUNCTIONS_READY' ) ){
 
 
             ?>
-            <div class="section-subheader">
-                <?php dt_render_field_icon( $fields[$field_key] );
 
-                echo esc_html( $fields[$field_key]['name'] );
-                ?> <span id="<?php echo esc_html( $display_field_id ); ?>-spinner" class="loading-spinner"></span>
-                <?php if ( $is_private ) : ?>
-                    <i class="fi-lock small" title="<?php _x( "Private Field: Only I can see it's content", 'disciple_tools' )?>"></i>
-                <?php endif;
-                if ( $field_type === 'communication_channel' ) : ?>
-                    <button data-field-type="<?php echo esc_html( $field_type ) ?>" data-list-class="<?php echo esc_html( $display_field_id ); ?>" class="add-button" type="button" <?php echo esc_html( $disabled ); ?>>
-                        <img src="<?php echo esc_html( get_template_directory_uri() . '/dt-assets/images/small-add.svg' ) ?>"/>
-                    </button>
-                <?php endif ?>
-                <?php if ( $field_type === 'link' ) : ?>
-
-                    <?php $only_one_option = count( $fields[$field_key]['default'] ) === 1 ? esc_attr( array_keys( $fields[$field_key]['default'] )[0] ) : '' ?>
-
-                    <div class="add-link-dropdown"
-                        <?php echo !empty( $only_one_option ) ? 'data-only-one-option' : '' ?>
-                        data-link-type="<?php echo esc_attr( $only_one_option ) ?>"
-                        data-field-key="<?php echo esc_attr( $field_key ) ?>">
-                        <button
-                            class="add-button add-link-dropdown__button"
-                            type="button"
-                            data-field-type="<?php echo esc_html( $field_type ) ?>"
-                            data-list-class="<?php echo esc_html( $display_field_id ); ?>"
-                            <?php echo esc_html( $disabled ); ?>
-                        >
-                            <img src="<?php echo esc_html( get_template_directory_uri() . '/dt-assets/images/small-add.svg' ) ?>"/>
-                        </button>
-
-                        <div class="add-link-dropdown__content add-link-<?php echo esc_attr( $display_field_id ) ?>"
-                            style="<?php echo count( $fields[$field_key]['default'] ) < 2 ? 'display: none' : '' ?>">
-                            <?php foreach ( $fields[$field_key]['default'] as $option_key => $option_value ): ?>
-
-                                <?php if ( isset( $option_value['deleted'] ) && $option_value['deleted'] === true ) {
-                                    continue;
-                                } ?>
-
-                                <div
-                                    class="add-link__option"
-                                    <?php echo !empty( $only_one_option ) ? 'data-only-one-option' : '' ?>
-                                    data-link-type="<?php echo esc_attr( $option_key ) ?>"
-                                    data-field-key="<?php echo esc_attr( $field_key ) ?>"
-                                >
-                                    <span style="margin: 0 5px 1rem 0;"><?php dt_render_field_icon( $option_value ) ?></span>
-                                    <?php echo esc_html( $option_value['label'] ) ?>
-                                </div>
-
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                <?php endif; ?>
-                <!-- location add -->
-                <?php if ( ( $field_type === 'location' || 'location_meta' === $field_type ) && DT_Mapbox_API::get_key() && ! empty( $post ) ) : ?>
-                    <button data-list-class="<?php echo esc_html( $field_key ) ?>" class="add-button" id="new-mapbox-search" type="button" <?php echo esc_html( $disabled ); ?>>
-                        <img src="<?php echo esc_html( get_template_directory_uri() . '/dt-assets/images/small-add.svg' ) ?>"/>
-                    </button>
-                <?php endif ?>
-            </div>
             <?php
             if ( $field_type === 'key_select' ) :
                 $color_select = false;
@@ -676,22 +616,20 @@ if ( ! defined( 'DT_FUNCTIONS_READY' ) ){
                 <?php } ?>
             <?php elseif ( $field_type === 'text' ) :?>
                 <dt-text
-                    name="field-name"
+                    name=<?php echo esc_html( $display_field_id ); ?>
                     label="<?php echo esc_html( $fields[$field_key]['name'] ) ?>"
                     value="<?php echo esc_html( $post[$field_key] ?? '' ) ?>"
-                    type="text"
                     required="<?php echo esc_html( $required_tag ) ?>"
                     requiredmessage=""
-                    icon="<i class='fi-lock small'></i>"
+                    icon="<?php echo esc_html( get_template_directory_uri() . '/dt-assets/images/locked.svg' ) ?>"
                     privatelabel="Private Field: Only I can see it's content"
-                    <?php echo esc_html( $private ); ?>
+                    <?php echo esc_html( $is_private ); ?>
                     <?php echo esc_html( $disabled ); ?>
                     onchange=""
                     internals-valid=""
                     aria-invalid="false"
                     id="<?php echo esc_html( $display_field_id ); ?>"
                 ></dt-text>
-
 
             <?php elseif ( $field_type === 'textarea' ) :?>
                 <textarea id="<?php echo esc_html( $display_field_id ); ?>" <?php echo esc_html( $required_tag ) ?>
