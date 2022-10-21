@@ -71,6 +71,9 @@ CSS file.
 @import "mapbox";
 @import "metrics";
 
+//import CSS Custom Property Themes
+@import "themes-light";
+
 // Import your retina/HD styles
 @import "2x";
 
