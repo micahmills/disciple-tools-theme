@@ -71,6 +71,9 @@ CSS file.
 @import "mapbox";
 @import "metrics";
 
+// Import View Transition styles
+@import "viewTransitions";
+
 // Import your retina/HD styles
 @import "2x";
 
